@@ -152,3 +152,21 @@ it_uses_special_symbol_for_above_fixed_max() {
 
   test "$graph" = '▁▂▆█⭱▅▃▂▁█⭱'
 }
+
+it_scales_common_logarithmically() {
+  graph="$($spark --scale log10 -- 1 10 100 1000 10000 100000)"
+
+  test "$graph" = '▁▂▃▅▆█'
+}
+
+it_scales_natural_logarithmically() {
+  graph="$($spark --scale ln -- 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)"
+
+  test "$graph" = '▁▁▂▂▃▄▄▄▅▅▆▇█'
+}
+
+it_scales_binary_logarithmically() {
+  graph="$($spark --scale ld -- 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)"
+
+  test "$graph" = '▁▁▂▂▃▃▄▅▅▆▆▇█'
+}

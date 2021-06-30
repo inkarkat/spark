@@ -48,6 +48,16 @@ scaleNumber()
 
 spark()
 {
+  if [ -n "$scaleFunction" ]; then
+    coproc BC { bc --mathlib; } # Start a coproc to scale individual numbers; this is much more efficient than starting a new process for each number.
+    scaleNumber()
+    {
+        printf "${scaleFunction}\n" "${1:?}" >&"${BC[1]}"
+        read -ru "${BC[0]}" scaledNumber
+        printf '%d\n' "${scaledNumber%.*}"
+    }
+  fi
+
   local n numbers=
 
   # find min/max values
@@ -104,7 +114,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Separate whitespace arguments are taken over to the output.
@@ -131,6 +141,17 @@ do
     --help|-h|-\?)  shift; printUsage "$0"; exit 0;;
     --min)          shift; fixedMin="$1"; shift;;
     --max)          shift; fixedMax="$1"; shift;;
+    --scale)        shift
+                    case "$1" in
+                      ln)     shift; scaleFunction='l(%d)';;
+                      ld)     shift; scaleFunction='l(%d)/l(2)';;
+                      log10)  shift; scaleFunction='l(%d)/l(10)';;
+                      *)      printf >&2 'ERROR: Invalid scale: %s\n' "$1"
+                              echo >&2
+                              printUsage >&2 "$0"
+                              exit 2
+                      esac
+                    ;;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
@@ -157,4 +178,5 @@ else
   done
   set -- "${numbers[@]}"
 fi
+
 spark "$@"
