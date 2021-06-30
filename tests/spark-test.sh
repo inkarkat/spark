@@ -76,6 +76,11 @@ it_renders_x_as_unknown_data() {
   test "$graph" = '▁▂▃▄××▂×█'
 }
 
+it_renders_x_as_custom_empty() {
+  graph="$(SPARK_UNKNOWN_DATA='' $spark 0 30 55 80 x x 33 x 150)"
+  test "$graph" = '▁▂▃▄▂█'
+}
+
 it_keeps_space_argument() {
   graph="$($spark 0 30 55 80 ' ' ' ' 33 ' ' 150)"
   test "$graph" = '▁▂▃▄  ▂ █'
@@ -119,9 +124,19 @@ it_uses_special_symbol_for_below_fixed_min() {
   test "$graph" = '⭳▁▂▆█▅▃▂▁⭳█'
 }
 
+it_uses_custom_empty_symbol_for_below_fixed_min() {
+  graph="$(SPARK_UNDERFLOW='' $spark --min 25 -- 24 25 30 45 50 40 35 30 25 0 50)"
+  test "$graph" = '▁▂▆█▅▃▂▁█'
+}
+
 it_uses_special_symbol_for_above_fixed_max() {
   graph="$($spark --max 50 -- 25 30 45 50 100 40 35 30 25 50 51)"
   test "$graph" = '▁▂▆█⭱▅▃▂▁█⭱'
+}
+
+it_uses_custom_empty_symbol_for_above_fixed_max() {
+  graph="$(SPARK_OVERFLOW='' $spark --max 50 -- 25 30 45 50 100 40 35 30 25 50 51)"
+  test "$graph" = '▁▂▆█▅▃▂▁█'
 }
 
 it_scales_common_logarithmically() {
