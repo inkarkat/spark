@@ -24,6 +24,8 @@
 #   spark -h
 #   # => Prints the spark help text.
 
+: ${SPARK_UNKNOWN_DATA=×}
+
 # Generates sparklines.
 #
 # $1 - The data we'd like to graph.
@@ -70,7 +72,10 @@ spark()
     if [[ "$n" =~ ^[[:digit:]]+$ ]]; then
       _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
     else
-        _echo -n "$n"
+      case "$n" in
+        x)  _echo -n "$SPARK_UNKNOWN_DATA";;
+        *)  _echo -n "$n";;
+      esac
     fi
   done
   _echo
@@ -88,9 +93,11 @@ help()
     $spark [-h|--help] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
+    Unknown data can be marked with x.
+
   EXAMPLES:
-    $spark 1 5 22 13 53
-    ▁▁▃▂█
+    $spark 1 5 22 x 53
+    ▁▁▃${SPARK_UNKNOWN_DATA}█
     $spark 0,30,55,80,33,150
     ▁▂▃▄▂█
     echo 9 13 5 17 1 | $spark

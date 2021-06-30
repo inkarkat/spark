@@ -91,3 +91,9 @@ it_keeps_newline_argument() {
 ▂
 █'
 }
+
+it_renders_x_as_unknown_data() {
+  graph="$($spark 0 30 55 80 x x 33 x 150)"
+
+  test "$graph" = '▁▂▃▄××▂×█'
+}
