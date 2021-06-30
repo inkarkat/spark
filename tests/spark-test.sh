@@ -76,3 +76,18 @@ it_equalizes_at_midtier_on_same_data() {
 
   test $graph = '▅▅▅▅'
 }
+
+it_keeps_space_argument() {
+  graph="$($spark 0 30 55 80 ' ' ' ' 33 ' ' 150)"
+
+  test "$graph" = '▁▂▃▄  ▂ █'
+}
+
+it_keeps_newline_argument() {
+  graph="$($spark 0 30 55 80 $'\n' $'\n' 33 $'\n' 150)"
+
+  test "$graph" = '▁▂▃▄
+
+▂
+█'
+}

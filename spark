@@ -50,6 +50,7 @@ spark()
     # round the number but that doesn't work on OS X (bash3) nor does
     # `awk '{printf "%.0f",$1}' <<< $n` work, so just cut it off
     n=${n%.*}
+    [[ "$n" =~ ^[[:digit:]]+$ ]] || continue
     (( n < min )) && min=$n
     (( n > max )) && max=$n
   done
@@ -66,7 +67,11 @@ spark()
   for n
   do
     n=${n%.*}
-    _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+    if [[ "$n" =~ ^[[:digit:]]+$ ]]; then
+      _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+    else
+        _echo -n "$n"
+    fi
   done
   _echo
 }
