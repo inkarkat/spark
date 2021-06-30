@@ -52,7 +52,6 @@ spark()
     n=${n%.*}
     (( n < min )) && min=$n
     (( n > max )) && max=$n
-    numbers=$numbers${numbers:+ }$n
   done
 
   # print ticks
@@ -64,8 +63,9 @@ spark()
   local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
   (( f < 1 )) && f=1
 
-  for n in $numbers
+  for n
   do
+    n=${n%.*}
     _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
   done
   _echo
