@@ -81,6 +81,7 @@ help()
 
   USAGE:
     $spark [-h|--help] VALUE,...
+    cat FILE [...] | $spark [...]
 
   EXAMPLES:
     $spark 1 5 22 13 53
