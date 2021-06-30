@@ -84,9 +84,9 @@ spark()
 [ "$BASH_SOURCE" != "$0" ] && return # Skip command-line argument parsing when sourced.
 
 # Prints the help text for spark.
-help()
+printUsage()
 {
-  local spark=$(basename $0)
+  local spark="$1"
   cat <<EOF
 
   USAGE:
@@ -109,10 +109,20 @@ help()
 EOF
 }
 
-# show help for no arguments if stdin is a terminal
-if { [ -z "$1" ] && [ -t 0 ] ; } || [ "$1" == '-h' ] || [ "$1" == '--help' ]; then
-  help
-  exit 0
+while [ $# -ne 0 ]
+do
+  case "$1" in
+    --help|-h|-\?)  shift; printUsage "$0"; exit 0;;
+    --)             shift; break;;
+    -)              break;;
+    -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
+    *)              break;;
+  esac
+done
+# Show help for no arguments if stdin is a terminal
+if [ $# -eq 0 -a -t 0 ]; then
+  printUsage >&2 "$0"
+  exit 2
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then

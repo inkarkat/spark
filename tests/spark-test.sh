@@ -4,8 +4,17 @@ describe "spark: Generates sparklines for a set of data."
 
 spark="../spark"
 
-it_shows_help_with_no_argv() {
-  $spark | grep USAGE
+it_shows_help_to_stderr_with_no_argv() {
+  ($spark 3>&1 1>&2 2>&3 3>&- | grep USAGE) 3>&1 1>&2 2>&3 3>&-
+}
+
+it_exits_2_with_no_argv() {
+  $spark 2>/dev/null && status=0 || status=$?
+  test $status -eq 2
+}
+
+it_shows_help_with_help_option() {
+  $spark --help | grep USAGE
 }
 
 it_graphs_argv_data() {
