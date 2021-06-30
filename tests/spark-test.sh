@@ -86,6 +86,12 @@ it_equalizes_at_midtier_on_same_data() {
   test $graph = '▅▅▅▅'
 }
 
+it_renders_x_as_unknown_data() {
+  graph="$($spark 0 30 55 80 x x 33 x 150)"
+
+  test "$graph" = '▁▂▃▄××▂×█'
+}
+
 it_keeps_space_argument() {
   graph="$($spark 0 30 55 80 ' ' ' ' 33 ' ' 150)"
 
@@ -101,8 +107,35 @@ it_keeps_newline_argument() {
 █'
 }
 
-it_renders_x_as_unknown_data() {
-  graph="$($spark 0 30 55 80 x x 33 x 150)"
+it_keeps_space_argument() {
+  graph="$($spark 0 30 55 80 ' ' ' ' 33 ' ' 150)"
 
-  test "$graph" = '▁▂▃▄××▂×█'
+  test "$graph" = '▁▂▃▄  ▂ █'
+}
+
+it_uses_auto_min_max() {
+  graph="$($spark 25 30 45 50 40 35 30 25 50)"
+
+  test "$graph" = '▁▂▆█▅▃▂▁█'
+}
+
+it_uses_fixed_min() {
+
+  graph="$($spark --min 0 -- 25 30 45 50 40 35 30 25 50)"
+
+  test "$graph" = '▄▅▇█▆▅▅▄█'
+}
+
+it_uses_fixed_max() {
+
+  graph="$($spark --max 100 -- 25 30 45 50 40 35 30 25 50)"
+
+  test "$graph" = '▁▁▂▃▂▁▁▁▃'
+}
+
+it_uses_fixed_min_max() {
+
+  graph="$($spark --min 0 --max 100 -- 25 30 45 50 40 35 30 25 50)"
+
+  test "$graph" = '▂▃▄▄▃▃▃▂▄'
 }
