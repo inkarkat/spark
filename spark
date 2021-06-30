@@ -81,7 +81,7 @@ help()
 
   USAGE:
     $spark [-h|--help] VALUE,...
-    cat FILE [...] | $spark [...]
+    cat FILE [...] | $spark [...] [-]
 
   EXAMPLES:
     $spark 1 5 22 13 53
@@ -99,4 +99,7 @@ if { [ -z "$1" ] && [ -t 0 ] ; } || [ "$1" == '-h' ] || [ "$1" == '--help' ]; th
   exit 0
 fi
 
-spark ${@:-`cat`}
+if [ $# -eq 0 -o "$1" = '-' ]; then
+  set -- $(</dev/stdin)
+fi
+spark "$@"
