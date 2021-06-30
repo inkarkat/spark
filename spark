@@ -41,12 +41,27 @@ _echo()
   fi
 }
 
+scaleNumber()
+{
+  printf '%d\n' "${1:?}"
+}
+
 spark()
 {
+  if [ -n "$scaleFunction" ]; then
+    coproc BC { bc --mathlib; } # Start a coproc to scale individual numbers; this is much more efficient than starting a new process for each number.
+    scaleNumber()
+    {
+        printf "${scaleFunction}\n" "${1:?}" >&"${BC[1]}"
+        read -ru "${BC[0]}" scaledNumber
+        printf '%d\n' "${scaledNumber%.*}"
+    }
+  fi
+
   local n numbers=
 
   # find min/max values
-  local min=${fixedMin:-0xffffffff} max=${fixedMax:-0}
+  local min="$(scaleNumber "${fixedMin:-0xffffffff}")" max="$(scaleNumber "${fixedMax:-0}")"
 
   [ -z "$fixedMin" -o -z "$fixedMax" ] && for n
   do
@@ -55,8 +70,8 @@ spark()
     # `awk '{printf "%.0f",$1}' <<< $n` work, so just cut it off
     n=${n%.*}
     [[ "$n" =~ ^[[:digit:]]+$ ]] || continue
-    [ -z "$fixedMin" ] && (( n < min )) && min=$n
-    [ -z "$fixedMax" ] && (( n > max )) && max=$n
+    [ -z "$fixedMin" ] && (( n < min )) && min="$(scaleNumber "$n")"
+    [ -z "$fixedMax" ] && (( n > max )) && max="$(scaleNumber "$n")"
   done
 
   # print ticks
@@ -72,6 +87,7 @@ spark()
   do
     n=${n%.*}
     if [[ "$n" =~ ^[[:digit:]]+$ ]]; then
+      n="$(scaleNumber "$n")"
       if [ $n -lt $min ]; then
         _echo -n "$SPARK_UNDERFLOW"
       elif [ $n -gt $max ]; then
@@ -98,7 +114,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Separate whitespace arguments are taken over to the output.
@@ -125,6 +141,17 @@ do
     --help|-h|-\?)  shift; printUsage "$0"; exit 0;;
     --min)          shift; fixedMin="$1"; shift;;
     --max)          shift; fixedMax="$1"; shift;;
+    --scale)        shift
+                    case "$1" in
+                      ln)     shift; scaleFunction='l(%d)';;
+                      ld)     shift; scaleFunction='l(%d)/l(2)';;
+                      log10)  shift; scaleFunction='l(%d)/l(10)';;
+                      *)      printf >&2 'ERROR: Invalid scale: %s\n' "$1"
+                              echo >&2
+                              printUsage >&2 "$0"
+                              exit 2
+                      esac
+                    ;;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
@@ -151,4 +178,5 @@ else
   done
   set -- "${numbers[@]}"
 fi
+
 spark "$@"
