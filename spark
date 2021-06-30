@@ -25,6 +25,8 @@
 #   # => Prints the spark help text.
 
 : ${SPARK_UNKNOWN_DATA=×}
+: ${SPARK_UNDERFLOW=⭳}
+: ${SPARK_OVERFLOW=⭱}
 
 # Generates sparklines.
 #
@@ -70,7 +72,13 @@ spark()
   do
     n=${n%.*}
     if [[ "$n" =~ ^[[:digit:]]+$ ]]; then
-      _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+      if [ $n -lt $min ]; then
+        _echo -n "$SPARK_UNDERFLOW"
+      elif [ $n -gt $max ]; then
+        _echo -n "$SPARK_OVERFLOW"
+      else
+        _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+      fi
     else
       case "$n" in
         x)  _echo -n "$SPARK_UNKNOWN_DATA";;

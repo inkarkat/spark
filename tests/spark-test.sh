@@ -139,3 +139,16 @@ it_uses_fixed_min_max() {
 
   test "$graph" = '▂▃▄▄▃▃▃▂▄'
 }
+
+it_uses_special_symbol_for_below_fixed_min() {
+
+  graph="$($spark --min 25 -- 24 25 30 45 50 40 35 30 25 0 50)"
+
+  test "$graph" = '⭳▁▂▆█▅▃▂▁⭳█'
+}
+
+it_uses_special_symbol_for_above_fixed_max() {
+  graph="$($spark --max 50 -- 25 30 45 50 100 40 35 30 25 50 51)"
+
+  test "$graph" = '▁▂▆█⭱▅▃▂▁█⭱'
+}
