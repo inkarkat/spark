@@ -93,9 +93,13 @@ help()
     $spark [-h|--help] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
+    Separate whitespace arguments are taken over to the output.
     Unknown data can be marked with x.
 
   EXAMPLES:
+    $spark 0 30 55 80 ' ' 80 55 30 0 $'\n' 0 0 30 30 0 0 55 0 0
+    ▁▃▅█ █▅▃▁
+    ▁▁▃▃▁▁▅▁▁
     $spark 1 5 22 x 53
     ▁▁▃${SPARK_UNKNOWN_DATA}█
     $spark 0,30,55,80,33,150
