@@ -167,7 +167,7 @@ if [ $# -eq 0 -a -t 0 ]; then
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then
-  readarray -t numbers < <(tr , $'\n')
+  readarray -t numbers < <(sed -e 's/[[:space:],]/\n/g')
 else
   typeset -a numbers=()
   for arg
