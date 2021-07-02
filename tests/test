@@ -1,11 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Run roundup tests for spark.
 #
 
-roundup=$(which roundup)
-
-[ ! -z $roundup ] || {
+type -t roundup >/dev/null || {
   cat <<MESSAGE 1>&2 ;
 error: roundup missing
 
@@ -15,4 +13,4 @@ MESSAGE
   exit 1;
 }
 
-$roundup ./*-test.sh
+roundup ./*-test.sh
