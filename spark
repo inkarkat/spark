@@ -167,7 +167,7 @@ if [ $# -eq 0 -a -t 0 ]; then
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then
-  set -- $(tr , ' ')
+  readarray -t numbers < <(tr , $'\n')
 else
   typeset -a numbers=()
   for arg
@@ -178,7 +178,6 @@ else
       numbers+=("$arg")
     fi
   done
-  set -- "${numbers[@]}"
 fi
 
-spark "$@"
+spark "${numbers[@]}"
