@@ -1,7 +1,10 @@
-#!/bin/bash
+#!/bin/bash -e
 #
 # Run roundup tests for spark.
 #
+
+readonly scriptDir="$([ "${BASH_SOURCE[0]}" ] && dirname -- "${BASH_SOURCE[0]}" || exit 3)"
+[ -d "$scriptDir" ] || { echo >&2 "ERROR: Cannot determine script directory!"; exit 3; }
 
 type -t roundup >/dev/null || {
   cat <<MESSAGE 1>&2 ;
@@ -13,4 +16,5 @@ MESSAGE
   exit 1;
 }
 
+cd "$scriptDir"
 roundup ./*-test.sh
