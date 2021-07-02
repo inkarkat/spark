@@ -119,6 +119,7 @@ printUsage()
     cat FILE [...] | $spark [...] [-]
 
     Separate whitespace arguments are taken over to the output.
+    Completely empty lines in the input are rendered as spaces.
     Unknown data can be marked with x.
 
   EXAMPLES:
@@ -167,7 +168,7 @@ if [ $# -eq 0 -a -t 0 ]; then
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then
-  readarray -t numbers < <(sed -e 's/[[:space:],]/\n/g')
+  readarray -t numbers < <(sed -e 's/[[:space:],]/\n/g' -e 's/^$/ /')
 else
   typeset -a numbers=()
   for arg
