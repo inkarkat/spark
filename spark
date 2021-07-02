@@ -24,6 +24,7 @@
 #   spark -h
 #   # => Prints the spark help text.
 
+: ${SPARK_TICKS='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'}
 : ${SPARK_UNKNOWN_DATA=×}
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
@@ -75,10 +76,10 @@ spark()
   done
 
   # print ticks
-  local ticks=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
+  local ticks=($SPARK_TICKS)
 
   # use a high tick if data is constant
-  (( min == max )) && ticks=(▅ ▆)
+  (( min == max )) && ticks=("${ticks[@]:4:5}")
 
   local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
   (( f < 1 )) && f=1

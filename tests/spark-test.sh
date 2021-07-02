@@ -153,3 +153,8 @@ it_scales_binary_logarithmically() {
   graph="$($spark --scale ld -- 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192)"
   test "$graph" = '▁▁▂▂▃▃▄▅▅▆▆▇█'
 }
+
+it_renders_x_custom_ticks() {
+  graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8' $spark 0 30 55 80 33 150)"
+  test "$graph" = '123428'
+}
