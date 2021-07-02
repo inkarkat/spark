@@ -86,6 +86,12 @@ it_keeps_space_argument() {
   test "$graph" = '▁▂▃▄  ▂ █'
 }
 
+it_treats_empty_line_as_space_in_pipe_data() {
+  graph="$(echo -e '0 30 55\n80\n\n\n33\n\n150' | $spark)"
+
+  test "$graph" = '▁▂▃▄  ▂ █'
+}
+
 it_keeps_newline_argument() {
   graph="$($spark 0 30 55 80 $'\n' $'\n' 33 $'\n' 150)"
   test "$graph" = '▁▂▃▄
