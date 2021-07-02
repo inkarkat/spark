@@ -115,7 +115,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Separate whitespace arguments are taken over to the output.
@@ -153,6 +153,7 @@ do
                               exit 2
                       esac
                     ;;
+    --flip)         shift; SPARK_TICKS='[07m▇[0m [07m▆[0m [07m▅[0m [07m▄[0m [07m▃[0m [07m▂[0m [07m▁[0m █';;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;

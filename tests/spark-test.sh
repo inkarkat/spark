@@ -158,3 +158,8 @@ it_renders_x_custom_ticks() {
   graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8' $spark 0 30 55 80 33 150)"
   test "$graph" = '123428'
 }
+
+it_renders_flipped_ticks() {
+  graph="$($spark --flip 0 30 55 80 33 150)"
+  test "$graph" = '[07m▇[0m[07m▆[0m[07m▅[0m[07m▄[0m[07m▆[0m█'
+}
