@@ -105,6 +105,36 @@ it_keeps_tab_argument() {
   test "$graph" = $'▁▂▃▄\t\t▂\t█'
 }
 
+it_keeps_space_in_comma_argument() {
+  graph="$($spark '0,30,55,80, , ,33, ,150')"
+  test "$graph" = '▁▂▃▄  ▂ █'
+}
+
+it_keeps_space_in_comma_pipe_data() {
+  graph="$(echo '0,30,55,80, , ,33, ,150' | $spark)"
+  test "$graph" = '▁▂▃▄  ▂ █'
+}
+
+it_keeps_spaces_newlines_tabs_in_comma_argument() {
+  graph="$($spark $'0,30,\n,55,80,  ,33,\t,150')"
+  test "$graph" = $'▁▂\n▃▄  ▂\t█'
+}
+
+it_keeps_spaces_tabs_in_comma_pipe_data() {
+  graph="$(echo -e '0,30, ,55,80,  ,33,\t,150' | $spark)"
+  test "$graph" = $'▁▂ ▃▄  ▂\t█'
+}
+
+it_removes_single_newlines_in_comma_pipe_data() {
+  graph="$(echo -e '0,30,\n,55,80,\n,33,\n,150' | $spark)"
+  test "$graph" = '▁▂▃▄▂█'
+}
+
+it_turns_2_newlines_to_space_in_comma_pipe_data() {
+  graph="$(echo -e '0,30,\n\n,55,80,\n\n,33,\n\n,150' | $spark)"
+  test "$graph" = '▁▂ ▃▄ ▂ █'
+}
+
 it_uses_auto_min_max() {
   graph="$($spark 25 30 45 50 40 35 30 25 50)"
   test "$graph" = '▁▂▆█▅▃▂▁█'

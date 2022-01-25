@@ -168,13 +168,14 @@ if [ $# -eq 0 -a -t 0 ]; then
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then
-  readarray -t numbers < <(sed -e 's/[[:space:],]/\n/g' -e 's/^$/ /')
+  readarray -t numbers < <(sed -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /')
 else
   typeset -a numbers=()
   for arg
   do
     if [[ "$arg" =~ , ]]; then
-      numbers+=(${arg//,/ })
+      IFS=, read -r -a newNumbers <<<"${arg//$'\n'/}"
+      numbers+=("${newNumbers[@]///$'\n'}")
     else
       numbers+=("$arg")
     fi
