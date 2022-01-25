@@ -111,7 +111,7 @@ spark()
 # Prints the help text for spark.
 printUsage()
 {
-  local spark="$1"
+  local spark="$(basename "$1")"
   cat <<EOF
 
   USAGE:
