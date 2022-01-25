@@ -100,9 +100,9 @@ it_keeps_newline_argument() {
 █'
 }
 
-it_keeps_space_argument() {
-  graph="$($spark 0 30 55 80 ' ' ' ' 33 ' ' 150)"
-  test "$graph" = '▁▂▃▄  ▂ █'
+it_keeps_tab_argument() {
+  graph="$($spark 0 30 55 80 $'\t' $'\t' 33 $'\t' 150)"
+  test "$graph" = $'▁▂▃▄\t\t▂\t█'
 }
 
 it_uses_auto_min_max() {
