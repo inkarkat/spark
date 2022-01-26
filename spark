@@ -78,8 +78,11 @@ spark()
   # print ticks
   local ticks=($SPARK_TICKS)
 
-  # use a high tick if data is constant
-  (( min == max )) && ticks=("${ticks[@]:4:5}")
+  # Use a middle tick to render constant data.
+  if (( min == max )); then
+    middleTickNr=$((${#ticks[@]} / 2))
+    ticks=("${ticks[@]:$middleTickNr:$((middleTickNr+1))}")
+  fi
 
   local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
   (( f < 1 )) && f=1

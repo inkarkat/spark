@@ -219,3 +219,8 @@ it_renders_flipped_ticks() {
   graph="$($spark --flip 0 30 55 80 33 150)"
   test "$graph" = '[07m▇[0m[07m▆[0m[07m▅[0m[07m▄[0m[07m▆[0m█'
 }
+
+it_charts_constant_data_as_middle_custom_tick() {
+  graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8 a b c d e f g h' $spark 3,3,3)"
+  test "$graph" = 'aaa'
+}
