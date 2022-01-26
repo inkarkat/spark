@@ -138,7 +138,7 @@ do
                               exit 2
                       esac
                     ;;
-    --flip)         shift; ticks=([07m▇[0m [07m▆[0m [07m▅[0m [07m▄[0m [07m▃[0m [07m▂[0m [07m▁[0m █);;
+    --flip)         shift; ticks=(▇ ▆ ▅ ▄ ▃ ▂ ▁); ticks=("${ticks[@]/#/[07m}"); ticks=("${ticks[@]/%/[0m}"); ticks+=(█);;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
