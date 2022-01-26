@@ -74,7 +74,7 @@ spark()
       elif [ $n -gt $max ]; then
         _echo -n "$SPARK_OVERFLOW"
       else
-        _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+        _echo -n "${ticks[$(( ((($n-$min)<<8)/$f) ))]}"
       fi
     else
       case "$n" in
