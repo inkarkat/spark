@@ -215,6 +215,11 @@ it_renders_16_custom_ticks() {
   test "$graph" = '146a4h'
 }
 
+it_renders_special_custom_ticks() {
+  graph="$(SPARK_TICKS='? * \ !' $spark 0 120 55 80 33 150)"
+  test "$graph" = '?\**?!'
+}
+
 it_renders_flipped_ticks() {
   graph="$($spark --flip 0 30 55 80 33 150)"
   test "$graph" = '[07m▇[0m[07m▆[0m[07m▅[0m[07m▄[0m[07m▆[0m█'

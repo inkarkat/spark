@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-#
+
+set -o noglob
+
 # spark
 # https://github.com/holman/spark
 #
