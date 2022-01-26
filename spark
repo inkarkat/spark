@@ -55,9 +55,6 @@ spark()
     [ -z "$fixedMax" ] && (( n > max )) && max="$(scaleNumber "$n")"
   done
 
-  # print ticks
-  local ticks=($SPARK_TICKS)
-
   # Use a middle tick to render constant data.
   if (( min == max )); then
     middleTickNr=$((${#ticks[@]} / 2))
@@ -121,6 +118,7 @@ printUsage()
 EOF
 }
 
+typeset -a ticks=($SPARK_TICKS)
 fixedMin=
 fixedMax=
 while [ $# -ne 0 ]
@@ -140,7 +138,7 @@ do
                               exit 2
                       esac
                     ;;
-    --flip)         shift; SPARK_TICKS='[07m▇[0m [07m▆[0m [07m▅[0m [07m▄[0m [07m▃[0m [07m▂[0m [07m▁[0m █';;
+    --flip)         shift; ticks=([07m▇[0m [07m▆[0m [07m▅[0m [07m▄[0m [07m▃[0m [07m▂[0m [07m▁[0m █);;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
