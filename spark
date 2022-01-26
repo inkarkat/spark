@@ -142,6 +142,11 @@ do
     --as)           shift
                     case "$1" in
                       shaded-boxes) ticks=(' ' ░ ▒ ▒ ▓ █);;
+                      *)            printf >&2 'ERROR: Invalid tick name: %s\n' "$1"
+                                    echo >&2
+                                    printUsage "$0" >&2
+                                    exit 2
+                                    ;;
                     esac
                     shift
                     ;;

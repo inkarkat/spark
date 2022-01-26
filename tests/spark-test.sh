@@ -17,6 +17,15 @@ it_shows_help_with_help_option() {
   $spark --help | grep USAGE
 }
 
+it_shows_help_with_unknown_as_parameter() {
+  ($spark --as doesNotExist 1,5,22,13,5 3>&1 1>&2 2>&3 3>&- | grep USAGE) 3>&1 1>&2 2>&3 3>&-
+}
+
+it_exits_2_with_unknown_as_parameter() {
+  $spark --as doesNotExist 1,5,22,13,5 2>/dev/null && status=0 || status=$?
+  test $status -eq 2
+}
+
 it_graphs_argv_data() {
   graph="$($spark 1,5,22,13,5)"
 
