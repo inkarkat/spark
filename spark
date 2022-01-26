@@ -95,7 +95,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as shaded-boxes] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -139,6 +139,12 @@ do
                       esac
                     ;;
     --flip)         shift; ticks=(▇ ▆ ▅ ▄ ▃ ▂ ▁); ticks=("${ticks[@]/#/[07m}"); ticks=("${ticks[@]/%/[0m}"); ticks+=(█);;
+    --as)           shift
+                    case "$1" in
+                      shaded-boxes) ticks=(' ' ░ ▒ ▒ ▓ █);;
+                    esac
+                    shift
+                    ;;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;

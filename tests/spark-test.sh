@@ -229,3 +229,8 @@ it_charts_constant_data_as_middle_custom_tick() {
   graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8 a b c d e f g h' $spark 3,3,3)"
   test "$graph" = 'aaa'
 }
+
+it_renders_shaded_boxes_ticks() {
+  graph="$($spark --as shaded-boxes x 0 10 20 30 40 50 60 70 80 90 100 x)"
+  test "$graph" = '×  ░░▒▒▒▒▓▓█×'
+}
