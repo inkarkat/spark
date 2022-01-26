@@ -195,9 +195,24 @@ it_scales_binary_logarithmically() {
   test "$graph" = '▁▁▂▂▃▃▄▅▅▆▆▇█'
 }
 
-it_renders_x_custom_ticks() {
+it_renders_8_custom_ticks() {
   graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8' $spark 0 30 55 80 33 150)"
   test "$graph" = '123428'
+}
+
+it_renders_4_custom_ticks() {
+  graph="$(SPARK_TICKS='1 2 3 4' $spark 0 30 55 80 33 150)"
+  test "$graph" = '112214'
+}
+
+it_renders_10_custom_ticks() {
+  graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8 9 X' $spark 0 30 55 80 33 150)"
+  test "$graph" = '12452X'
+}
+
+it_renders_16_custom_ticks() {
+  graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8 a b c d e f g h' $spark 0 30 55 80 33 150)"
+  test "$graph" = '146a4h'
 }
 
 it_renders_flipped_ticks() {
