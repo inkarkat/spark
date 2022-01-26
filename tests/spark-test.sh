@@ -61,6 +61,11 @@ it_charts_4_lt_8() {
   test "$graph" = '▁▃█'
 }
 
+it_charts_constant_data_as_middle() {
+  graph="$($spark 3,3,3)"
+  test "$graph" = '▅▅▅'
+}
+
 it_charts_no_tier_0() {
   graph="$($spark 1,2,3,4,5)"
   test "$graph" = '▁▂▄▆█'
