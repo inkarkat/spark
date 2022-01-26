@@ -1,30 +1,8 @@
 #!/usr/bin/env bash
+# This web-based sparkline generator that was a bit of inspiration for spark:
+#   https://datacollective.org/sparkblocks
 
 set -o noglob
-
-# spark
-# https://github.com/holman/spark
-#
-# Generates sparklines for a set of data.
-#
-# Here's a good web-based sparkline generator that was a bit of inspiration
-# for spark:
-#
-#   https://datacollective.org/sparkblocks
-#
-# spark takes a comma-separated or space-separated list of data and then prints
-# a sparkline out of it.
-#
-# Examples:
-#
-#   spark 1 5 22 13 53
-#   # => ▁▁▃▂▇
-#
-#   spark 0 30 55 80 33 150
-#   # => ▁▂▃▅▂▇
-#
-#   spark -h
-#   # => Prints the spark help text.
 
 : ${SPARK_TICKS='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'}
 : ${SPARK_UNKNOWN_DATA=×}
@@ -122,6 +100,9 @@ printUsage()
   USAGE:
     $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip] VALUE,...
     cat FILE [...] | $spark [...] [-]
+
+    Generates sparklines for a set of data; it takes a comma-separated or
+    space-separated list of data and then prints a sparkline out of it.
 
     Separate whitespace arguments are taken over to the output.
     Completely empty lines in the input are rendered as spaces.
