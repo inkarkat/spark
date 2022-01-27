@@ -5,6 +5,7 @@
 set -o noglob
 
 : ${SPARK_TICKS='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'}
+: ${SPARK_EMPTY= }
 : ${SPARK_UNKNOWN_DATA=×}
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
@@ -79,6 +80,8 @@ spark()
     else
       case "$n" in
         x)  _echo -n "$SPARK_UNKNOWN_DATA";;
+        ' ')
+            _echo -n "$SPARK_EMPTY";;
         *)  _echo -n "$n";;
       esac
     fi

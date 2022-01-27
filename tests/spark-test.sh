@@ -149,6 +149,11 @@ it_turns_2_newlines_to_space_in_comma_pipe_data() {
   test "$graph" = '▁▂ ▃▄ ▂ █'
 }
 
+it_renders_space_as_spark_empty() {
+  graph="$(SPARK_EMPTY='-' $spark '0,30,55,80, , ,33, ,150')"
+  test "$graph" = '▁▂▃▄--▂-█'
+}
+
 it_uses_auto_min_max() {
   graph="$($spark 25 30 45 50 40 35 30 25 50)"
   test "$graph" = '▁▂▆█▅▃▂▁█'
