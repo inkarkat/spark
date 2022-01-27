@@ -119,6 +119,16 @@ it_keeps_tab_argument() {
   test "$graph" = $'▁▂▃▄\t\t▂\t█'
 }
 
+it_keeps_non_numbers_in_comma_argument() {
+  graph="$($spark '0,30,55,80,Hello,foo bar,33,(me@you%what.is?),150')"
+  test "$graph" = '▁▂▃▄Hellofoo bar▂(me@you%what.is?)█'
+}
+
+it_keeps_non_numbers_in_comma_pipe_data() {
+  graph="$(echo '0,30,55,80,Hello,foo bar,33,(me@you%what.is?),150' | $spark)"
+  test "$graph" = '▁▂▃▄Hellofoo bar▂(me@you%what.is?)█'
+}
+
 it_keeps_space_in_comma_argument() {
   graph="$($spark '0,30,55,80, , ,33, ,150')"
   test "$graph" = '▁▂▃▄  ▂ █'
