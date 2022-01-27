@@ -119,6 +119,20 @@ greyscale()
 
 rainbow()
 {
+  local isSingleTick; [ ${#ticks[@]} -eq 1 ] && isSingleTick=t
+  typeset -a coloredTicks=()
+  local tick; for tick in "${ticks[@]}"
+  do
+    for i in 55 20 21 26 68 67 72 79 78 114 113 118 148 185 226 220 202 196 160 198 163 127
+    do
+      coloredTicks+=("[38;5;${i}m${tick}[0m")
+    done
+  done
+  ticks=("${coloredTicks[@]}")
+}
+
+RGBrainbow()
+{
   typeset -a coloredTicks=()
   local tick; for tick in "${ticks[@]}"
   do
@@ -160,7 +174,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -218,6 +232,10 @@ do
                         ;;
                       rainbow-*)
                         colorizer=rainbow
+                        scheme="${scheme#*-}"
+                        ;;
+                      RGBrainbow-*)
+                        colorizer=RGBrainbow
                         scheme="${scheme#*-}"
                         ;;
                     esac
