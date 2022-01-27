@@ -95,6 +95,14 @@ spark()
   _echo
 }
 
+abortInvalidTick()
+{
+  printf >&2 'ERROR: Invalid tick name: %s\n' "${2:?}"
+  echo >&2
+  printUsage "${1:?}" >&2
+  exit 2
+}
+
 [ "$BASH_SOURCE" != "$0" ] && return # Skip command-line argument parsing when sourced.
 
 # Prints the help text for spark.
@@ -164,11 +172,7 @@ do
                         SPARK_ZERO="${originalSparkZero:-  }"
                         ticks=(░░ ▒▒ ▒▒ ▓▓ ██);;
                       *)
-                        printf >&2 'ERROR: Invalid tick name: %s\n' "$1"
-                        echo >&2
-                        printUsage "$0" >&2
-                        exit 2
-                        ;;
+                        abortInvalidTick "$0" "$scheme";;
                     esac
                     shift
                     ;;
