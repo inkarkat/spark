@@ -117,6 +117,21 @@ greyscale()
   ticks=("${coloredTicks[@]}")
 }
 
+green()
+{
+  local isSingleTick; [ ${#ticks[@]} -eq 1 ] && isSingleTick=t
+  typeset -a coloredTicks=()
+  local tick; for tick in "${ticks[@]}"
+  do
+    for i in ${isSingleTick:+194} 157 114 71 28 22  # Only use the lightest color when there's a single tick.
+    do
+      coloredTicks+=("[38;5;${i}m${tick}[0m")
+    done
+    coloredTicks+=("$tick")
+  done
+  ticks=("${coloredTicks[@]}")
+}
+
 
 
 [ "$BASH_SOURCE" != "$0" ] && return # Skip command-line argument parsing when sourced.
@@ -128,7 +143,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares|greyscale-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -178,6 +193,10 @@ do
                     case "$scheme" in
                       gr[ae]yscale-*)
                         colorizer=greyscale
+                        scheme="${scheme#*-}"
+                        ;;
+                      green-*)
+                        colorizer=green
                         scheme="${scheme#*-}"
                         ;;
                     esac
