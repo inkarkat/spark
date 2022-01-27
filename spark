@@ -103,6 +103,22 @@ abortInvalidTick()
   exit 2
 }
 
+greyscale()
+{
+  typeset -a coloredTicks=()
+  local tick; for tick in "${ticks[@]}"
+  do
+    for ((i = 255; i >= 232; i--))
+    do
+      coloredTicks+=("[38;5;${i}m${tick}[0m")
+    done
+    coloredTicks+=("$tick")
+  done
+  ticks=("${coloredTicks[@]}")
+}
+
+
+
 [ "$BASH_SOURCE" != "$0" ] && return # Skip command-line argument parsing when sourced.
 
 # Prints the help text for spark.
@@ -112,7 +128,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares|greyscale-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -157,13 +173,42 @@ do
                     ;;
     --flip)         shift; ticks=(▇ ▆ ▅ ▄ ▃ ▂ ▁); ticks=("${ticks[@]/#/[07m}"); ticks=("${ticks[@]/%/[0m}"); ticks+=(█);;
     --as)           shift
-                    case "$1" in
+                    colorizer=
+                    scheme="$1"; shift
+                    case "$scheme" in
+                      gr[ae]yscale-*)
+                        colorizer=greyscale
+                        scheme="${scheme#*-}"
+                        ;;
+                    esac
+
+                    case "$scheme" in
+                      boxes)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        ticks=("$SPARK_BOX")
+                        ;;
+                      center-boxes)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        ticks=('∎')
+                        ;;
+                      double-squares)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        ticks=('██')
+                        ;;
+                      double-center-squares)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        ticks=('▝▘')
+                        ;;
+
                       sized-boxes)
                         ticks=(🞌 · ▪ ∎ █);;
                       sized-fullwidth-boxes)
                         SPARK_EMPTY="${originalSparkEmpty:-　}"
                         SPARK_ZERO="${originalSparkZero:-　}"
                         ticks=(・ ◾ ⬛);;
+
                       shaded-boxes)
                         SPARK_ZERO="${originalSparkZero:- }"
                         ticks=(░ ▒ ▒ ▓ █);;
@@ -171,10 +216,12 @@ do
                         SPARK_EMPTY="${originalSparkEmpty:-  }"
                         SPARK_ZERO="${originalSparkZero:-  }"
                         ticks=(░░ ▒▒ ▒▒ ▓▓ ██);;
+
                       *)
                         abortInvalidTick "$0" "$scheme";;
                     esac
-                    shift
+
+                    $colorizer
                     ;;
     --)             shift; break;;
     -)              break;;
