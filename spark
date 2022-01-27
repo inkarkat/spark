@@ -5,7 +5,9 @@
 set -o noglob
 
 : ${SPARK_TICKS='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'}
+originalSparkEmpty="$SPARK_EMPTY"
 : ${SPARK_EMPTY= }
+: ${SPARK_BOX=█}
 : ${SPARK_UNKNOWN_DATA=×}
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
@@ -98,7 +100,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as shaded-boxes] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -144,12 +146,21 @@ do
     --flip)         shift; ticks=(▇ ▆ ▅ ▄ ▃ ▂ ▁); ticks=("${ticks[@]/#/[07m}"); ticks=("${ticks[@]/%/[0m}"); ticks+=(█);;
     --as)           shift
                     case "$1" in
-                      shaded-boxes) ticks=(' ' ░ ▒ ▒ ▓ █);;
-                      *)            printf >&2 'ERROR: Invalid tick name: %s\n' "$1"
-                                    echo >&2
-                                    printUsage "$0" >&2
-                                    exit 2
-                                    ;;
+                      sized-boxes)
+                        ticks=(🞌 · ▪ ∎ █);;
+                      sized-fullwidth-boxes)
+                        SPARK_EMPTY="${originalSparkEmpty:-'　'}"
+                        ticks=(・ ◾ ⬛);;
+                      shaded-boxes)
+                        ticks=("$SPARK_EMPTY" ░ ▒ ▒ ▓ █);;
+                      double-shaded-squares)
+                        ticks=("${SPARK_EMPTY}${SPARK_EMPTY}" ░░ ▒▒ ▒▒ ▓▓ ██);;
+                      *)
+                        printf >&2 'ERROR: Invalid tick name: %s\n' "$1"
+                        echo >&2
+                        printUsage "$0" >&2
+                        exit 2
+                        ;;
                     esac
                     shift
                     ;;

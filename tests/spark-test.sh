@@ -248,3 +248,8 @@ it_renders_shaded_boxes_ticks() {
   graph="$($spark --as shaded-boxes x 0 10 20 30 40 50 60 70 80 90 100 x)"
   test "$graph" = '×  ░░▒▒▒▒▓▓█×'
 }
+
+it_renders_double_shaded_square_ticks() {
+  graph="$($spark --as double-shaded-squares x 0 10 20 30 40 50 60 70 80 90 100 x)"
+  test "$graph" = '×    ░░░░▒▒▒▒▒▒▒▒▓▓▓▓██×'
+}
