@@ -7,6 +7,7 @@ set -o noglob
 : ${SPARK_TICKS='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'}
 originalSparkEmpty="$SPARK_EMPTY"
 : ${SPARK_EMPTY= }
+: ${SPARK_ZERO=_}
 : ${SPARK_BOX=█}
 : ${SPARK_UNKNOWN_DATA=×}
 : ${SPARK_UNDERFLOW=⭳}
@@ -76,6 +77,8 @@ spark()
         _echo -n "$SPARK_UNDERFLOW"
       elif [ $n -gt $max ]; then
         _echo -n "$SPARK_OVERFLOW"
+      elif [[ "$item" =~ ^0+(\.0+)?$ ]]; then
+        _echo -n "$SPARK_ZERO"
       else
         _echo -n "${ticks[$(( ((($n-$min)<<8)/$f) ))]}"
       fi
