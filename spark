@@ -7,6 +7,7 @@ set -o noglob
 : ${SPARK_TICKS='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'}
 originalSparkEmpty="$SPARK_EMPTY"
 : ${SPARK_EMPTY= }
+originalSparkZero="$SPARK_ZERO"
 : ${SPARK_ZERO=_}
 : ${SPARK_BOX=█}
 : ${SPARK_UNKNOWN_DATA=×}
@@ -152,12 +153,16 @@ do
                       sized-boxes)
                         ticks=(🞌 · ▪ ∎ █);;
                       sized-fullwidth-boxes)
-                        SPARK_EMPTY="${originalSparkEmpty:-'　'}"
+                        SPARK_EMPTY="${originalSparkEmpty:-　}"
+                        SPARK_ZERO="${originalSparkZero:-　}"
                         ticks=(・ ◾ ⬛);;
                       shaded-boxes)
-                        ticks=("$SPARK_EMPTY" ░ ▒ ▒ ▓ █);;
+                        SPARK_ZERO="${originalSparkZero:- }"
+                        ticks=(░ ▒ ▒ ▓ █);;
                       double-shaded-squares)
-                        ticks=("${SPARK_EMPTY}${SPARK_EMPTY}" ░░ ▒▒ ▒▒ ▓▓ ██);;
+                        SPARK_EMPTY="${originalSparkEmpty:-  }"
+                        SPARK_ZERO="${originalSparkZero:-  }"
+                        ticks=(░░ ▒▒ ▒▒ ▓▓ ██);;
                       *)
                         printf >&2 'ERROR: Invalid tick name: %s\n' "$1"
                         echo >&2
