@@ -164,6 +164,16 @@ it_renders_space_as_spark_empty() {
   test "$graph" = '▁▂▃▄--▂-█'
 }
 
+it_renders_another_char_as_spark_empty() {
+  graph="$(SPARK_EMPTY_DATA='nul' SPARK_EMPTY='-' $spark '1,nul,55,80, , ,33, ,150')"
+  test "$graph" = '▁-▃▄  ▂ █'
+}
+
+it_does_not_render_space_as_spark_empty() {
+  graph="$(SPARK_EMPTY_DATA='' $spark '1,30,55,80, , ,33, ,150')"
+  test "$graph" = '▁▂▃▄  ▂ █'
+}
+
 it_uses_auto_min_max() {
   graph="$($spark 25 30 45 50 40 35 30 25 50)"
   test "$graph" = '▁▂▆█▅▃▂▁█'
