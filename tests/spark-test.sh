@@ -91,7 +91,7 @@ it_renders_x_as_unknown_data() {
 }
 
 it_renders_x_as_custom_empty() {
-  graph="$(SPARK_UNKNOWN_DATA='' $spark 1 30 55 80 x x 33 x 150)"
+  graph="$(SPARK_UNKNOWN='' $spark 1 30 55 80 x x 33 x 150)"
   test "$graph" = '▁▂▃▄▂█'
 }
 
