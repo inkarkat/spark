@@ -174,7 +174,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -266,6 +266,10 @@ do
                         SPARK_EMPTY="${originalSparkEmpty:-　}"
                         SPARK_ZERO="${originalSparkZero:-　}"
                         ticks=(・ ◾ ⬛);;
+                      color-fullwidth-boxes)
+                        SPARK_EMPTY="${originalSparkEmpty:-⬜}"
+                        SPARK_ZERO="${originalSparkZero:-⬛}"
+                        ticks=(🟪 🟦 🟩 🟨 🟧 🟥);;
 
                       shaded-boxes)
                         SPARK_ZERO="${originalSparkZero:- }"
