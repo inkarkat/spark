@@ -262,7 +262,15 @@ do
                         ;;
 
                       sized-boxes)
-                        ticks=(🞌 · ▪ ∎ █);;
+                        if [ -n "$colorizer" ]; then
+                          # Omit the very small boxes, as the colors are hardly
+                          # seen on those, and we already have enough variation
+                          # through the colors themselves.
+                          ticks=(▪ ∎ █)
+                        else
+                          ticks=(🞌 · ▪ ∎ █)
+                        fi
+                        ;;
                       sized-fullwidth-boxes)
                         SPARK_EMPTY="${originalSparkEmpty:-　}"
                         SPARK_ZERO="${originalSparkZero:-　}"
