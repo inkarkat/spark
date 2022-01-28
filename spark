@@ -12,6 +12,7 @@ originalSparkZero="$SPARK_ZERO"
 : ${SPARK_ZERO=_}
 : ${SPARK_BOX=█}
 : ${SPARK_UNKNOWN=×}
+: ${SPARK_UNKNOWN_DATA=x}
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
 
@@ -84,16 +85,12 @@ spark()
       else
         _echo -n "${ticks[$(( ((($n-$min)<<8)/$f) ))]}"
       fi
+    elif [ -n "$SPARK_UNKNOWN_DATA" ] && [ "$item" = "$SPARK_UNKNOWN_DATA" ]; then
+        _echo -n "$SPARK_UNKNOWN"
+    elif [ -n "$SPARK_EMPTY_DATA" ] && [ "$item" = "$SPARK_EMPTY_DATA" ]; then
+      _echo -n "$SPARK_EMPTY"
     else
-      case "$item" in
-        x)  _echo -n "$SPARK_UNKNOWN";;
-        *)  if [ -n "$SPARK_EMPTY_DATA" ] && [ "$item" = "$SPARK_EMPTY_DATA" ]; then
-              _echo -n "$SPARK_EMPTY"
-            else
-              _echo -n "$item"
-          fi
-          ;;
-      esac
+      _echo -n "$item"
     fi
   done
   _echo

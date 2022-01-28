@@ -90,6 +90,16 @@ it_renders_x_as_unknown_data() {
   test "$graph" = '▁▂▃▄××▂×█'
 }
 
+it_renders_another_char_as_unknown_data() {
+  graph="$(SPARK_UNKNOWN_DATA='what' $spark 1 what 55 80 x x 33 x 150)"
+  test "$graph" = '▁×▃▄xx▂x█'
+}
+
+it_does_not_render_x_as_unknown_data() {
+  graph="$(SPARK_UNKNOWN_DATA='' $spark 1 30 55 80 x x 33 x 150)"
+  test "$graph" = '▁▂▃▄xx▂x█'
+}
+
 it_renders_x_as_custom_empty() {
   graph="$(SPARK_UNKNOWN='' $spark 1 30 55 80 x x 33 x 150)"
   test "$graph" = '▁▂▃▄▂█'
