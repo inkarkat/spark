@@ -90,8 +90,23 @@ it_renders_x_as_unknown_data() {
   test "$graph" = '▁▂▃▄××▂×█'
 }
 
-it_renders_x_as_custom_empty() {
+it_renders_another_char_as_unknown_data() {
+  graph="$(SPARK_UNKNOWN_DATA='what' $spark 1 what 55 80 x x 33 x 150)"
+  test "$graph" = '▁×▃▄xx▂x█'
+}
+
+it_renders_a_number_as_unknown_data() {
+  graph="$(SPARK_UNKNOWN_DATA=30 $spark 1 30 55 80 x x 33 x 150)"
+  test "$graph" = '▁×▃▄xx▂x█'
+}
+
+it_does_not_render_x_as_unknown_data() {
   graph="$(SPARK_UNKNOWN_DATA='' $spark 1 30 55 80 x x 33 x 150)"
+  test "$graph" = '▁▂▃▄xx▂x█'
+}
+
+it_renders_x_as_custom_empty() {
+  graph="$(SPARK_UNKNOWN='' $spark 1 30 55 80 x x 33 x 150)"
   test "$graph" = '▁▂▃▄▂█'
 }
 
@@ -162,6 +177,21 @@ it_turns_2_newlines_to_space_in_comma_pipe_data() {
 it_renders_space_as_spark_empty() {
   graph="$(SPARK_EMPTY='-' $spark '1,30,55,80, , ,33, ,150')"
   test "$graph" = '▁▂▃▄--▂-█'
+}
+
+it_renders_another_char_as_spark_empty() {
+  graph="$(SPARK_EMPTY_DATA='nul' SPARK_EMPTY='-' $spark '1,nul,55,80, , ,33, ,150')"
+  test "$graph" = '▁-▃▄  ▂ █'
+}
+
+it_renders_a_number_as_spark_empty() {
+  graph="$(SPARK_EMPTY_DATA=30 SPARK_EMPTY='-' $spark '1,30,55,80, , ,33, ,150')"
+  test "$graph" = '▁-▃▄  ▂ █'
+}
+
+it_does_not_render_space_as_spark_empty() {
+  graph="$(SPARK_EMPTY_DATA='' $spark '1,30,55,80, , ,33, ,150')"
+  test "$graph" = '▁▂▃▄  ▂ █'
 }
 
 it_uses_auto_min_max() {
