@@ -4,7 +4,8 @@
 
 set -o noglob
 
-: ${SPARK_TICKS='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'}
+readonly defaultTicks='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'
+: ${SPARK_TICKS="$defaultTicks"}
 originalSparkEmpty="$SPARK_EMPTY"
 : ${SPARK_EMPTY= }
 : ${SPARK_EMPTY_DATA= }
@@ -175,7 +176,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -242,6 +243,9 @@ do
                     esac
 
                     case "$scheme" in
+                      bars|default)
+                        ticks=($defaultTicks)
+                        ;;
                       boxes)
                         [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
                         ticks=("$SPARK_BOX")

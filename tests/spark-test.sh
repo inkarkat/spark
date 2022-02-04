@@ -299,6 +299,16 @@ it_charts_constant_data_as_middle_custom_tick() {
   test "$graph" = 'aaa'
 }
 
+it_renders_named_default_ticks() {
+  graph="$($spark --as default 'x,0,10,20,30,40,50, ,60,70,80,90,100,x')"
+  test "$graph" = '×_▁▂▃▃▄ ▅▅▆▇█×'
+}
+
+it_renders_named_bars_ticks_even_when_overridden() {
+  graph="$(SPARK_TICKS='? * \ !' $spark --as bars 'x,0,10,20,30,40,50, ,60,70,80,90,100,x')"
+  test "$graph" = '×_▁▂▃▃▄ ▅▅▆▇█×'
+}
+
 it_renders_shaded_boxes_ticks() {
   graph="$($spark --as shaded-boxes 'x,0,10,20,30,40,50, ,60,70,80,90,100,x')"
   test "$graph" = '× ░░▒▒▒ ▒▒▓▓█×'
