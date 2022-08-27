@@ -35,7 +35,7 @@ scaleNumber()
   printf '%d\n' "${1:?}"
 }
 
-spark()
+initialize()
 {
   if [ -n "$scaleFunction" ]; then
     coproc BC { bc --mathlib; } # Start a coproc to scale individual numbers; this is much more efficient than starting a new process for each number.
@@ -47,10 +47,11 @@ spark()
     }
   fi
 
-  local item n numbers=
+  local item n
 
   # find min/max values
-  local min="$(scaleNumber "${fixedMin:-0xffffffff}")" max="$(scaleNumber "${fixedMax:-0}")"
+  min="$(scaleNumber "${fixedMin:-0xffffffff}")"
+  max="$(scaleNumber "${fixedMax:-0}")"
 
   [ -z "$fixedMin" -o -z "$fixedMax" ] && for item
   do
@@ -69,9 +70,13 @@ spark()
     ticks=("${ticks[@]:$middleTickNr:$((middleTickNr+1))}")
   fi
 
-  local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
+  f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
   (( f < 1 )) && f=1
+}
 
+sparkNumbers()
+{
+  local item n
   for item
   do
     n=${item%.*}
@@ -325,4 +330,5 @@ else
   done
 fi
 
-spark "${numbers[@]}"
+initialize "${numbers[@]}"
+sparkNumbers "${numbers[@]}"
