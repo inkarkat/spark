@@ -17,9 +17,11 @@ originalSparkZero="$SPARK_ZERO"
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
 
-# Generates sparklines.
-#
-# $1 - The data we'd like to graph.
+inputReader()
+{
+  sed "$@" -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /'
+}
+
 _echo()
 {
   if [ "X$1" = "X-n" ]; then
@@ -321,12 +323,12 @@ if [ $# -eq 0 -o "$1" = '-' ]; then
     while IFS=$'\n' read -r chunk
     do
       sparkNumbers "$chunk"
-    done < <(sed --unbuffered -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /')
+    done < <(inputReader --unbuffered)
 
     _echo
     exit
   else
-    readarray -t numbers < <(sed -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /')
+    readarray -t numbers < <(inputReader)
   fi
 else
   typeset -a numbers=()
