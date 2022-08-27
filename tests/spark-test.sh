@@ -214,6 +214,11 @@ it_uses_fixed_min_max() {
   test "$graph" = '▂▃▄▄▃▃▃▂▄'
 }
 
+it_charts_pipe_with_fixed_min_max() {
+  graph="$(echo $'25,30,45,50\n40 35\n30\n25 50' | $spark --min 0 --max 100)"
+  test "$graph" = '▂▃▄▄▃▃▃▂▄'
+}
+
 it_uses_special_symbol_for_below_fixed_min() {
   graph="$($spark --min 25 -- 24 25 30 45 50 40 35 30 25 0 50)"
   test "$graph" = '⭳▁▂▆█▅▃▂▁⭳█'

@@ -17,9 +17,11 @@ originalSparkZero="$SPARK_ZERO"
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
 
-# Generates sparklines.
-#
-# $1 - The data we'd like to graph.
+inputReader()
+{
+  sed "$@" -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /'
+}
+
 _echo()
 {
   if [ "X$1" = "X-n" ]; then
@@ -35,7 +37,7 @@ scaleNumber()
   printf '%d\n' "${1:?}"
 }
 
-spark()
+initialize()
 {
   if [ -n "$scaleFunction" ]; then
     coproc BC { bc --mathlib; } # Start a coproc to scale individual numbers; this is much more efficient than starting a new process for each number.
@@ -47,10 +49,11 @@ spark()
     }
   fi
 
-  local item n numbers=
+  local item n
 
   # find min/max values
-  local min="$(scaleNumber "${fixedMin:-0xffffffff}")" max="$(scaleNumber "${fixedMax:-0}")"
+  min="$(scaleNumber "${fixedMin:-0xffffffff}")"
+  max="$(scaleNumber "${fixedMax:-0}")"
 
   [ -z "$fixedMin" -o -z "$fixedMax" ] && for item
   do
@@ -69,9 +72,13 @@ spark()
     ticks=("${ticks[@]:$middleTickNr:$((middleTickNr+1))}")
   fi
 
-  local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
+  f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
   (( f < 1 )) && f=1
+}
 
+sparkNumbers()
+{
+  local item n
   for item
   do
     n=${item%.*}
@@ -94,7 +101,6 @@ spark()
       _echo -n "$item"
     fi
   done
-  _echo
 }
 
 abortInvalidTick()
@@ -311,7 +317,19 @@ if [ $# -eq 0 -a -t 0 ]; then
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then
-  readarray -t numbers < <(sed -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /')
+  if [ -t 1 -a -n "$fixedMin" -a -n "$fixedMax" ]; then
+    initialize
+
+    while IFS=$'\n' read -r chunk
+    do
+      sparkNumbers "$chunk"
+    done < <(inputReader --unbuffered)
+
+    _echo
+    exit
+  else
+    readarray -t numbers < <(inputReader)
+  fi
 else
   typeset -a numbers=()
   for arg
@@ -325,4 +343,6 @@ else
   done
 fi
 
-spark "${numbers[@]}"
+initialize "${numbers[@]}"
+sparkNumbers "${numbers[@]}"
+_echo
