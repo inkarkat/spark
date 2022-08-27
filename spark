@@ -99,7 +99,6 @@ sparkNumbers()
       _echo -n "$item"
     fi
   done
-  _echo
 }
 
 abortInvalidTick()
@@ -316,7 +315,19 @@ if [ $# -eq 0 -a -t 0 ]; then
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then
-  readarray -t numbers < <(sed -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /')
+  if [ -t 1 -a -n "$fixedMin" -a -n "$fixedMax" ]; then
+    initialize
+
+    while IFS=$'\n' read -r chunk
+    do
+      sparkNumbers "$chunk"
+    done < <(sed --unbuffered -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /')
+
+    _echo
+    exit
+  else
+    readarray -t numbers < <(sed -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /')
+  fi
 else
   typeset -a numbers=()
   for arg
@@ -332,3 +343,4 @@ fi
 
 initialize "${numbers[@]}"
 sparkNumbers "${numbers[@]}"
+_echo
