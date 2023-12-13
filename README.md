@@ -83,7 +83,7 @@ Contributions welcome! Like seriously, I think contributions are real nifty.
 
 Make your changes and be sure the tests all pass:
 
-    ./test
+    ./tests/test
 
 That also means you should probably be adding your own tests as well as changing
 the code. Wouldn't want to lose all your good work down the line, after all!
