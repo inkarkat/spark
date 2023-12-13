@@ -5,7 +5,7 @@ describe "spark: Generates sparklines for a set of data."
 spark="../spark"
 
 it_shows_help_to_stderr_with_no_argv() {
-  ($spark 3>&1 1>&2 2>&3 3>&- | grep USAGE) 3>&1 1>&2 2>&3 3>&-
+  { spark 3>&1 1>&2 2>&3 3>&- | grep USAGE; } 3>&1 1>&2 2>&3 3>&-
 }
 
 it_exits_2_with_no_argv() {
@@ -18,7 +18,7 @@ it_shows_help_with_help_option() {
 }
 
 it_shows_help_with_unknown_as_parameter() {
-  ($spark --as doesNotExist 1,5,22,13,5 3>&1 1>&2 2>&3 3>&- | grep USAGE) 3>&1 1>&2 2>&3 3>&-
+  { $spark --as doesNotExist 1,5,22,13,5 3>&1 1>&2 2>&3 3>&- | grep USAGE; } 3>&1 1>&2 2>&3 3>&-
 }
 
 it_exits_2_with_unknown_as_parameter() {
