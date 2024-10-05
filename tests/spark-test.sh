@@ -274,6 +274,10 @@ it_scales_zero_number() {
   test "$graph" = '▁_▂_▃_▄_▅_▆_█'
 }
 
+it_prints_no_errors_when_scaling() {
+  [ -z "$(spark --scale ld -- 2 16 64 2>&1 >/dev/null)" ]
+}
+
 it_renders_8_custom_ticks() {
   graph="$(SPARK_TICKS='1 2 3 4 5 6 7 8' $spark 1 30 55 80 33 150)"
   test "$graph" = '123428'

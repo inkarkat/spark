@@ -60,7 +60,7 @@ initialize()
   local item n
 
   # find min/max values
-  min="$(scaleNumber "${fixedMin:-0xffffffff}")"
+  min="$(scaleNumber "${fixedMin:-$(printf %d 0xffffffff)}")"
   max="$(scaleNumber "${fixedMax:-0}")"
 
   [ -z "$fixedMin" -o -z "$fixedMax" ] && for item
