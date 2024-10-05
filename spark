@@ -43,6 +43,14 @@ initialize()
     coproc BC { bc --mathlib; } # Start a coproc to scale individual numbers; this is much more efficient than starting a new process for each number.
     scaleNumber()
     {
+        # 0 is the absolute minimum input and output value; therefore, it needs to be
+        # mapped to 0 because ln(0) = -inf (but bc returns
+        # -99999999999999999999.00000000000000000000, which still breaks the printf).
+        if [ ${1:?} -eq 0 ]; then
+          echo 0
+          return
+        fi
+
         printf "${scaleFunction}\n" "${1:?}" >&"${BC[1]}"
         read -ru "${BC[0]}" scaledNumber
         printf '%d\n' "${scaledNumber%.*}"
@@ -52,7 +60,7 @@ initialize()
   local item n
 
   # find min/max values
-  min="$(scaleNumber "${fixedMin:-0xffffffff}")"
+  min="$(scaleNumber "${fixedMin:-$(printf %d 0xffffffff)}")"
   max="$(scaleNumber "${fixedMax:-0}")"
 
   [ -z "$fixedMin" -o -z "$fixedMax" ] && for item
