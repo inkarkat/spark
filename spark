@@ -37,6 +37,11 @@ scaleNumber()
   printf '%d\n' "${1:?}"
 }
 
+singleValueInMaximumRangeDivider()
+{
+  printf %d $(( ((max-min)<<8)/(${#ticks[@]}-1) ))
+}
+
 initialize()
 {
   if [ -n "$scaleFunction" ]; then
@@ -80,8 +85,8 @@ initialize()
     ticks=("${ticks[@]:$middleTickNr:$((middleTickNr+1))}")
   fi
 
-  f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
-  (( f < 1 )) && f=1
+  divider=$($obtainDivider)
+  (( divider < 1 )) && divider=1
 }
 
 sparkNumbers()
@@ -103,7 +108,7 @@ sparkNumbers()
       elif [[ "$item" =~ ^0+(\.0+)?$ ]]; then
         _echo -n "$SPARK_ZERO"
       else
-        _echo -n "${ticks[$(( ((($n-$min)<<8)/$f) ))]}"
+        _echo -n "${ticks[$(( ((($n-$min)<<8)/$divider) ))]}"
       fi
     else
       _echo -n "$item"
@@ -216,6 +221,7 @@ EOF
 typeset -a ticks=($SPARK_TICKS)
 fixedMin=
 fixedMax=
+obtainDivider=singleValueInMaximumRangeDivider
 while [ $# -ne 0 ]
 do
   case "$1" in
