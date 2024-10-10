@@ -1,4 +1,32 @@
-# changes
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## 2.0.0 - 10-Oct-2024
+### Added
+- ENH: Output space and newline arguments as-is instead of suppressing them
+  Addresses holman/spark#110
+- ENH: Render x in input as unknown data (×)
+  Cp. holman/spark#97
+- ENH: Allow fixed `--min` / `--max` that overrides the auto-scaling of the input data
+  Fixes holman/spark#102
+- ENH: Indicate under-/overflow (when using fixed min/max) with special symbols
+- ENH: Allow logarithmic scaling of input data
+  Cp. holman/spark#99
+- ENH: Allow customization of ticks via `SPARK_TICKS`
+- ENH: Support vertical flipping with `--flip`
+- ENH: Render an exact value of 0 with a special `SPARK_ZERO` value
+- ENH: Add _{rainbow,greyscale,green}-*_, _sized-[fullwidth-]boxes_, _[double-]shaded-boxes_ tick renderings
+- ENH: Add tick variants using ANSI color sequences: _greyscale|green|[RGB]rainbow_
+- ENH: Make empty and unknown data configurable
+- ENH: Allow streaming of input data if both min and max are fixed
+- ENH: Record numbers that fall into each sparkline bucket and allow printing of legend with `--with-legend`
+### Changed
+- CHG: Change default division algorithm to even distribution, add `--single-max-range` to switch back
+  Fixes holman/spark#101
 
 ## 1.0.0
 
