@@ -16,6 +16,11 @@ originalSparkZero="$SPARK_ZERO"
 : ${SPARK_UNKNOWN_DATA=x}
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
+: ${SPARK_EMPTY_BUCKET=}
+: ${SPARK_LEGEND_BUCKET_SEPARATOR= }
+# SPARK_LEGEND_SEPARATOR
+: ${SPARK_LEGEND_RANGE_ASSIGNMENT==}
+: ${SPARK_LEGEND_RANGE_SEPARATOR=…}
 
 inputReader()
 {
@@ -93,6 +98,8 @@ initialize()
   (( divider < 1 )) && divider=1
 }
 
+typeset -a bucketMin=() bucketMax=()
+legendSeparator=
 sparkNumbers()
 {
   local item n
@@ -112,9 +119,14 @@ sparkNumbers()
       elif [[ "$item" =~ ^0+(\.0+)?$ ]]; then
         _echo -n "$SPARK_ZERO"
       else
-        _echo -n "${ticks[$(( ((($n-$min)<<8)/$divider) ))]}"
+        local index=$(( ((($n-$min)<<8)/$divider) ))
+        _echo -n "${ticks[$index]}"
+
+        [ -z "${bucketMin[$index]}" ] || (( n < bucketMin[index] )) && bucketMin[$index]=$n
+        [ -z "${bucketMax[$index]}" ] || (( n > bucketMax[index] )) && bucketMax[$index]=$n
       fi
     else
+      [ -z "$legendSeparator" ] && [[ "$item" =~ $'\n' ]] && legendSeparator=$'\n'
       _echo -n "$item"
     fi
   done
@@ -189,6 +201,29 @@ green()
 }
 
 
+printLegend()
+{
+  typeset -a ranges=()
+  for ((i = 0; i < ${#ticks[@]}; i++))
+  do
+    if [ -z "${bucketMin[i]}${bucketMax[i]}" ]; then
+      if [ -n "$SPARK_EMPTY_BUCKET" ]; then
+        local range="=$SPARK_EMPTY_BUCKET"
+      else
+        continue
+      fi
+    elif [ ${bucketMin[i]} -eq ${bucketMax[i]} ]; then
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}"
+    else
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${SPARK_LEGEND_RANGE_SEPARATOR}${bucketMax[i]}"
+    fi
+    ranges+=("${ticks[i]}${range}")
+  done
+  local IFS="$SPARK_LEGEND_BUCKET_SEPARATOR"
+  [ ${#ranges[@]} -eq 0 ] \
+    || printf '%s%s\n' "${SPARK_LEGEND_SEPARATOR-${legendSeparator:- | }}" "${ranges[*]}"
+}
+
 
 [ "$BASH_SOURCE" != "$0" ] && return # Skip command-line argument parsing when sourced.
 
@@ -199,7 +234,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] [--with-legend] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -216,6 +251,9 @@ printUsage()
                         highlighting / differentiation from other high values,
                         or if the highest value is a special one like the zero
                         value.
+  --with-legend         Append a legend to the output (if input contains
+                        newlines on a new line), showing the value ranges for
+                        each sparkline character.
 
   EXAMPLES:
     $spark 0 30 55 80 ' ' 80 55 30 0 $'\n' 0 0 30 30 0 0 55 0 0
@@ -234,6 +272,7 @@ typeset -a ticks=($SPARK_TICKS)
 fixedMin=
 fixedMax=
 obtainDivider=evenDivider
+postAction=_echo
 while [ $# -ne 0 ]
 do
   case "$1" in
@@ -332,6 +371,7 @@ do
 
                     $colorizer
                     ;;
+    --with-legend)  shift; postAction=printLegend;;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
@@ -373,4 +413,4 @@ fi
 
 initialize "${numbers[@]}"
 sparkNumbers "${numbers[@]}"
-_echo
+$postAction
