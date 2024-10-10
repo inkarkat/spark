@@ -1,36 +1,32 @@
 #!/usr/bin/env bash
-#
-# spark
-# https://github.com/holman/spark
-#
-# Generates sparklines for a set of data.
-#
-# Here's a good web-based sparkline generator that was a bit of inspiration
-# for spark:
-#
+# This web-based sparkline generator that was a bit of inspiration for spark:
 #   https://datacollective.org/sparkblocks
-#
-# spark takes a comma-separated or space-separated list of data and then prints
-# a sparkline out of it.
-#
-# Examples:
-#
-#   spark 1 5 22 13 53
-#   # => ▁▁▃▂▇
-#
-#   spark 0 30 55 80 33 150
-#   # => ▁▂▃▅▂▇
-#
-#   spark -h
-#   # => Prints the spark help text.
 
-: ${SPARK_UNKNOWN_DATA=×}
+set -o noglob
+
+readonly defaultTicks='▁ ▂ ▃ ▄ ▅ ▆ ▇ █'
+: ${SPARK_TICKS="$defaultTicks"}
+originalSparkEmpty="$SPARK_EMPTY"
+: ${SPARK_EMPTY= }
+: ${SPARK_EMPTY_DATA= }
+originalSparkZero="$SPARK_ZERO"
+: ${SPARK_ZERO=_}
+: ${SPARK_BOX=█}
+: ${SPARK_UNKNOWN=×}
+: ${SPARK_UNKNOWN_DATA=x}
 : ${SPARK_UNDERFLOW=⭳}
 : ${SPARK_OVERFLOW=⭱}
+: ${SPARK_EMPTY_BUCKET=}
+: ${SPARK_LEGEND_BUCKET_SEPARATOR= }
+# SPARK_LEGEND_SEPARATOR
+: ${SPARK_LEGEND_RANGE_ASSIGNMENT==}
+: ${SPARK_LEGEND_RANGE_SEPARATOR=…}
 
-# Generates sparklines.
-#
-# $1 - The data we'd like to graph.
+inputReader()
+{
+  sed "$@" -e 's/,/\n/g' -e 't end' -e 's/[[:space:]]/\n/g' -e :end -e 's/^$/ /'
+}
+
 _echo()
 {
   if [ "X$1" = "X-n" ]; then
@@ -46,86 +42,225 @@ scaleNumber()
   printf '%d\n' "${1:?}"
 }
 
-spark()
+evenDivider()
+{
+  printf %d $(( ((max-min+1)<<8)/${#ticks[@]} ))
+}
+singleValueInMaximumRangeDivider()
+{
+  printf %d $(( ((max-min)<<8)/(${#ticks[@]}-1) ))
+}
+
+initialize()
 {
   if [ -n "$scaleFunction" ]; then
     coproc BC { bc --mathlib; } # Start a coproc to scale individual numbers; this is much more efficient than starting a new process for each number.
     scaleNumber()
     {
+        # 0 is the absolute minimum input and output value; therefore, it needs to be
+        # mapped to 0 because ln(0) = -inf (but bc returns
+        # -99999999999999999999.00000000000000000000, which still breaks the printf).
+        if [ ${1:?} -eq 0 ]; then
+          echo 0
+          return
+        fi
+
         printf "${scaleFunction}\n" "${1:?}" >&"${BC[1]}"
         read -ru "${BC[0]}" scaledNumber
         printf '%d\n' "${scaledNumber%.*}"
     }
   fi
 
-  local n numbers=
+  local item n
 
   # find min/max values
-  local min="$(scaleNumber "${fixedMin:-0xffffffff}")" max="$(scaleNumber "${fixedMax:-0}")"
+  min="$(scaleNumber "${fixedMin:-$(printf %d 0xffffffff)}")"
+  max="$(scaleNumber "${fixedMax:-0}")"
 
-  [ -z "$fixedMin" -o -z "$fixedMax" ] && for n
+  [ -z "$fixedMin" -o -z "$fixedMax" ] && for item
   do
     # on Linux (or with bash4) we could use `printf %.0f $n` here to
     # round the number but that doesn't work on OS X (bash3) nor does
     # `awk '{printf "%.0f",$1}' <<< $n` work, so just cut it off
-    n=${n%.*}
+    n=${item%.*}
     [[ "$n" =~ ^[[:digit:]]+$ ]] || continue
     [ -z "$fixedMin" ] && (( n < min )) && min="$(scaleNumber "$n")"
     [ -z "$fixedMax" ] && (( n > max )) && max="$(scaleNumber "$n")"
   done
 
-  # print ticks
-  local ticks=(▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
+  # Use a middle tick to render constant data.
+  if (( min == max )); then
+    middleTickNr=$((${#ticks[@]} / 2))
+    ticks=("${ticks[@]:$middleTickNr:$((middleTickNr+1))}")
+  fi
 
-  # use a high tick if data is constant
-  (( min == max )) && ticks=(▅ ▆)
+  divider=$($obtainDivider)
+  (( divider < 1 )) && divider=1
+}
 
-  local f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
-  (( f < 1 )) && f=1
-
-  for n
+typeset -a bucketMin=() bucketMax=()
+legendSeparator=
+sparkNumbers()
+{
+  local item n
+  for item
   do
-    n=${n%.*}
-    if [[ "$n" =~ ^[[:digit:]]+$ ]]; then
+    n=${item%.*}
+    if [ -n "$SPARK_UNKNOWN_DATA" ] && [ "$item" = "$SPARK_UNKNOWN_DATA" ]; then
+        _echo -n "$SPARK_UNKNOWN"
+    elif [ -n "$SPARK_EMPTY_DATA" ] && [ "$item" = "$SPARK_EMPTY_DATA" ]; then
+      _echo -n "$SPARK_EMPTY"
+    elif [[ "$n" =~ ^[[:digit:]]+$ ]]; then
       n="$(scaleNumber "$n")"
       if [ $n -lt $min ]; then
         _echo -n "$SPARK_UNDERFLOW"
       elif [ $n -gt $max ]; then
         _echo -n "$SPARK_OVERFLOW"
+      elif [[ "$item" =~ ^0+(\.0+)?$ ]]; then
+        _echo -n "$SPARK_ZERO"
       else
-        _echo -n ${ticks[$(( ((($n-$min)<<8)/$f) ))]}
+        local index=$(( ((($n-$min)<<8)/$divider) ))
+        _echo -n "${ticks[$index]}"
+
+        [ -z "${bucketMin[$index]}" ] || (( n < bucketMin[index] )) && bucketMin[$index]=$n
+        [ -z "${bucketMax[$index]}" ] || (( n > bucketMax[index] )) && bucketMax[$index]=$n
       fi
     else
-      case "$n" in
-        x)  _echo -n "$SPARK_UNKNOWN_DATA";;
-        *)  _echo -n "$n";;
-      esac
+      [ -z "$legendSeparator" ] && [[ "$item" =~ $'\n' ]] && legendSeparator=$'\n'
+      _echo -n "$item"
     fi
   done
-  _echo
 }
+
+abortInvalidTick()
+{
+  printf >&2 'ERROR: Invalid tick name: %s\n' "${2:?}"
+  echo >&2
+  printUsage "${1:?}" >&2
+  exit 2
+}
+
+greyscale()
+{
+  typeset -a coloredTicks=()
+  local tick; for tick in "${ticks[@]}"
+  do
+    for ((i = 255; i >= 232; i--))
+    do
+      coloredTicks+=("[38;5;${i}m${tick}[0m")
+    done
+    coloredTicks+=("$tick")
+  done
+  ticks=("${coloredTicks[@]}")
+}
+
+rainbow()
+{
+  local isSingleTick; [ ${#ticks[@]} -eq 1 ] && isSingleTick=t
+  typeset -a coloredTicks=()
+  local tick; for tick in "${ticks[@]}"
+  do
+    for i in 55 20 21 26 68 67 72 79 78 114 113 118 148 185 226 220 202 196 160 198 163 127
+    do
+      coloredTicks+=("[38;5;${i}m${tick}[0m")
+    done
+  done
+  ticks=("${coloredTicks[@]}")
+}
+
+RGBrainbow()
+{
+  typeset -a coloredTicks=()
+  local tick; for tick in "${ticks[@]}"
+  do
+    for ((i = 76; i >= 0; i--))
+    do
+      r=$((255 - (i * 255 / 76)))
+      g=$((i * 510 / 76))
+      b=$((i * 255 / 76))
+      ((g > 255)) && g=$((510 - g))
+      coloredTicks+=("[38;2;${r};${g};${b}m${tick}[0m")
+    done
+  done
+  ticks=("${coloredTicks[@]}")
+}
+
+green()
+{
+  local isSingleTick; [ ${#ticks[@]} -eq 1 ] && isSingleTick=t
+  typeset -a coloredTicks=()
+  local tick; for tick in "${ticks[@]}"
+  do
+    for i in ${isSingleTick:+194} 157 114 71 28 22  # Only use the lightest color when there's a single tick.
+    do
+      coloredTicks+=("[38;5;${i}m${tick}[0m")
+    done
+    coloredTicks+=("$tick")
+  done
+  ticks=("${coloredTicks[@]}")
+}
+
+
+printLegend()
+{
+  typeset -a ranges=()
+  for ((i = 0; i < ${#ticks[@]}; i++))
+  do
+    if [ -z "${bucketMin[i]}${bucketMax[i]}" ]; then
+      if [ -n "$SPARK_EMPTY_BUCKET" ]; then
+        local range="=$SPARK_EMPTY_BUCKET"
+      else
+        continue
+      fi
+    elif [ ${bucketMin[i]} -eq ${bucketMax[i]} ]; then
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}"
+    else
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${SPARK_LEGEND_RANGE_SEPARATOR}${bucketMax[i]}"
+    fi
+    ranges+=("${ticks[i]}${range}")
+  done
+  local IFS="$SPARK_LEGEND_BUCKET_SEPARATOR"
+  [ ${#ranges[@]} -eq 0 ] \
+    || printf '%s%s\n' "${SPARK_LEGEND_SEPARATOR-${legendSeparator:- | }}" "${ranges[*]}"
+}
+
 
 [ "$BASH_SOURCE" != "$0" ] && return # Skip command-line argument parsing when sourced.
 
 # Prints the help text for spark.
 printUsage()
 {
-  local spark="$1"
+  local spark="$(basename "$1")"
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] [--with-legend] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
+    Generates sparklines for a set of data; it takes a comma-separated or
+    space-separated list of data and then prints a sparkline out of it.
+
     Separate whitespace arguments are taken over to the output.
+    Completely empty lines in the input are rendered as spaces.
     Unknown data can be marked with x.
+
+  --single-max-range    Change the value division so that only the highest value
+                        is put into the largest bucket. By default, values are
+                        distributed evenly into buckets. This may make sense if
+                        the highest value is of special interest and needs
+                        highlighting / differentiation from other high values,
+                        or if the highest value is a special one like the zero
+                        value.
+  --with-legend         Append a legend to the output (if input contains
+                        newlines on a new line), showing the value ranges for
+                        each sparkline character.
 
   EXAMPLES:
     $spark 0 30 55 80 ' ' 80 55 30 0 $'\n' 0 0 30 30 0 0 55 0 0
     ▁▃▅█ █▅▃▁
     ▁▁▃▃▁▁▅▁▁
     $spark 1 5 22 x 53
-    ▁▁▃${SPARK_UNKNOWN_DATA}█
+    ▁▁▃${SPARK_UNKNOWN}█
     $spark 0,30,55,80,33,150
     ▁▂▃▄▂█
     echo 9 13 5 17 1 | $spark
@@ -133,8 +268,11 @@ printUsage()
 EOF
 }
 
+typeset -a ticks=($SPARK_TICKS)
 fixedMin=
 fixedMax=
+obtainDivider=evenDivider
+postAction=_echo
 while [ $# -ne 0 ]
 do
   case "$1" in
@@ -152,6 +290,88 @@ do
                               exit 2
                       esac
                     ;;
+    --single-max-range)
+                    shift; obtainDivider=singleValueInMaximumRangeDivider;;
+    --flip)         shift; ticks=(▇ ▆ ▅ ▄ ▃ ▂ ▁); ticks=("${ticks[@]/#/[07m}"); ticks=("${ticks[@]/%/[0m}"); ticks+=(█);;
+    --as)           shift
+                    colorizer=
+                    scheme="$1"; shift
+                    case "$scheme" in
+                      gr[ae]yscale-*)
+                        colorizer=greyscale
+                        scheme="${scheme#*-}"
+                        ;;
+                      green-*)
+                        colorizer=green
+                        scheme="${scheme#*-}"
+                        ;;
+                      rainbow-*)
+                        colorizer=rainbow
+                        scheme="${scheme#*-}"
+                        ;;
+                      RGBrainbow-*)
+                        colorizer=RGBrainbow
+                        scheme="${scheme#*-}"
+                        ;;
+                    esac
+
+                    case "$scheme" in
+                      bars|default)
+                        ticks=($defaultTicks)
+                        ;;
+                      boxes)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        ticks=("$SPARK_BOX")
+                        ;;
+                      center-boxes)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        ticks=('∎')
+                        ;;
+                      double-squares)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        ticks=('██')
+                        ;;
+                      double-center-squares)
+                        [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        ticks=('▝▘')
+                        ;;
+
+                      sized-boxes)
+                        if [ -n "$colorizer" ]; then
+                          # Omit the very small boxes, as the colors are hardly
+                          # seen on those, and we already have enough variation
+                          # through the colors themselves.
+                          ticks=(▪ ∎ █)
+                        else
+                          ticks=(🞌 · ▪ ∎ █)
+                        fi
+                        ;;
+                      sized-fullwidth-boxes)
+                        SPARK_EMPTY="${originalSparkEmpty:-　}"
+                        SPARK_ZERO="${originalSparkZero:-　}"
+                        ticks=(・ ◾ ⬛);;
+                      color-fullwidth-boxes)
+                        SPARK_EMPTY="${originalSparkEmpty:-⬜}"
+                        SPARK_ZERO="${originalSparkZero:-⬛}"
+                        ticks=(🟪 🟦 🟩 🟨 🟧 🟥);;
+
+                      shaded-boxes)
+                        SPARK_ZERO="${originalSparkZero:- }"
+                        ticks=(░ ▒ ▒ ▓ █);;
+                      double-shaded-squares)
+                        SPARK_EMPTY="${originalSparkEmpty:-  }"
+                        SPARK_ZERO="${originalSparkZero:-  }"
+                        ticks=(░░ ▒▒ ▒▒ ▓▓ ██);;
+
+                      *)
+                        abortInvalidTick "$0" "$scheme";;
+                    esac
+
+                    $colorizer
+                    ;;
+    --with-legend)  shift; postAction=printLegend;;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
@@ -165,18 +385,32 @@ if [ $# -eq 0 -a -t 0 ]; then
 fi
 
 if [ $# -eq 0 -o "$1" = '-' ]; then
-  set -- $(tr , ' ')
+  if [ -t 1 -a -n "$fixedMin" -a -n "$fixedMax" ]; then
+    initialize
+
+    while IFS=$'\n' read -r chunk
+    do
+      sparkNumbers "$chunk"
+    done < <(inputReader --unbuffered)
+
+    _echo
+    exit
+  else
+    readarray -t numbers < <(inputReader)
+  fi
 else
   typeset -a numbers=()
   for arg
   do
     if [[ "$arg" =~ , ]]; then
-      numbers+=(${arg//,/ })
+      IFS=, read -r -a newNumbers <<<"${arg//$'\n'/}"
+      numbers+=("${newNumbers[@]///$'\n'}")
     else
       numbers+=("$arg")
     fi
   done
-  set -- "${numbers[@]}"
 fi
 
-spark "$@"
+initialize "${numbers[@]}"
+sparkNumbers "${numbers[@]}"
+$postAction
