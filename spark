@@ -37,6 +37,15 @@ scaleNumber()
   printf '%d\n' "${1:?}"
 }
 
+evenDivider()
+{
+  printf %d $(( ((max-min+1)<<8)/${#ticks[@]} ))
+}
+singleValueInMaximumRangeDivider()
+{
+  printf %d $(( ((max-min)<<8)/(${#ticks[@]}-1) ))
+}
+
 initialize()
 {
   if [ -n "$scaleFunction" ]; then
@@ -80,8 +89,8 @@ initialize()
     ticks=("${ticks[@]:$middleTickNr:$((middleTickNr+1))}")
   fi
 
-  f=$(( (($max-$min)<<8)/(${#ticks[@]}-1) ))
-  (( f < 1 )) && f=1
+  divider=$($obtainDivider)
+  (( divider < 1 )) && divider=1
 }
 
 sparkNumbers()
@@ -103,7 +112,7 @@ sparkNumbers()
       elif [[ "$item" =~ ^0+(\.0+)?$ ]]; then
         _echo -n "$SPARK_ZERO"
       else
-        _echo -n "${ticks[$(( ((($n-$min)<<8)/$f) ))]}"
+        _echo -n "${ticks[$(( ((($n-$min)<<8)/$divider) ))]}"
       fi
     else
       _echo -n "$item"
@@ -190,7 +199,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -199,6 +208,14 @@ printUsage()
     Separate whitespace arguments are taken over to the output.
     Completely empty lines in the input are rendered as spaces.
     Unknown data can be marked with x.
+
+  --single-max-range    Change the value division so that only the highest value
+                        is put into the largest bucket. By default, values are
+                        distributed evenly into buckets. This may make sense if
+                        the highest value is of special interest and needs
+                        highlighting / differentiation from other high values,
+                        or if the highest value is a special one like the zero
+                        value.
 
   EXAMPLES:
     $spark 0 30 55 80 ' ' 80 55 30 0 $'\n' 0 0 30 30 0 0 55 0 0
@@ -216,6 +233,7 @@ EOF
 typeset -a ticks=($SPARK_TICKS)
 fixedMin=
 fixedMax=
+obtainDivider=evenDivider
 while [ $# -ne 0 ]
 do
   case "$1" in
@@ -233,6 +251,8 @@ do
                               exit 2
                       esac
                     ;;
+    --single-max-range)
+                    shift; obtainDivider=singleValueInMaximumRangeDivider;;
     --flip)         shift; ticks=(▇ ▆ ▅ ▄ ▃ ▂ ▁); ticks=("${ticks[@]/#/[07m}"); ticks=("${ticks[@]/%/[0m}"); ticks+=(█);;
     --as)           shift
                     colorizer=
