@@ -27,5 +27,5 @@ it_scales_zero_number() {
 }
 
 it_prints_no_errors_when_scaling() {
-  [ -z "$(spark --scale ld -- 2 16 64 2>&1 >/dev/null)" ]
+  [ -z "$($spark --scale ld -- 2 16 64 2>&1 >/dev/null)" ]
 }

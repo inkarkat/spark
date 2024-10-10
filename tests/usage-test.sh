@@ -7,7 +7,7 @@ readonly scriptDir="$([ "${BASH_SOURCE[0]}" ] && dirname -- "${BASH_SOURCE[0]}" 
 spark="${scriptDir}/../spark"
 
 it_shows_help_to_stderr_with_no_argv() {
-  { spark 3>&1 1>&2 2>&3 3>&- | grep USAGE; } 3>&1 1>&2 2>&3 3>&-
+  { $spark 3>&1 1>&2 2>&3 3>&- | grep USAGE; } 3>&1 1>&2 2>&3 3>&-
 }
 
 it_exits_2_with_no_argv() {

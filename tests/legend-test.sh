@@ -24,7 +24,7 @@ it_appends_a_legend_on_new_line() {
 }
 
 it_appends_a_customized_legend() {
-  graph="$(SPARK_LEGEND_BUCKET_SEPARATOR=$'\n' SPARK_LEGEND_SEPARATOR=$'\n---\n' SPARK_LEGEND_RANGE_ASSIGNMENT=': ' SPARK_LEGEND_RANGE_SEPARATOR='..' spark --with-legend 1 2 300 598 599 600 $'\n' 450 420 390 370 350 420 )"
+  graph="$(SPARK_LEGEND_BUCKET_SEPARATOR=$'\n' SPARK_LEGEND_SEPARATOR=$'\n---\n' SPARK_LEGEND_RANGE_ASSIGNMENT=': ' SPARK_LEGEND_RANGE_SEPARATOR='..' $spark --with-legend 1 2 300 598 599 600 $'\n' 450 420 390 370 350 420 )"
   test "$graph" = '▁▁▄███
 ▆▆▆▅▅▆
 ---
@@ -36,7 +36,7 @@ it_appends_a_customized_legend() {
 }
 
 it_appends_a_customized_legend_including_empty() {
-  graph="$(SPARK_EMPTY_BUCKET='{}' SPARK_LEGEND_BUCKET_SEPARATOR=$'\n' SPARK_LEGEND_SEPARATOR=$'\n---\n' SPARK_LEGEND_RANGE_ASSIGNMENT=': ' SPARK_LEGEND_RANGE_SEPARATOR='..' spark --with-legend 1 2 300 598 599 600 $'\n' 450 420 390 370 350 420 )"
+  graph="$(SPARK_EMPTY_BUCKET='{}' SPARK_LEGEND_BUCKET_SEPARATOR=$'\n' SPARK_LEGEND_SEPARATOR=$'\n---\n' SPARK_LEGEND_RANGE_ASSIGNMENT=': ' SPARK_LEGEND_RANGE_SEPARATOR='..' $spark --with-legend 1 2 300 598 599 600 $'\n' 450 420 390 370 350 420 )"
   test "$graph" = '▁▁▄███
 ▆▆▆▅▅▆
 ---

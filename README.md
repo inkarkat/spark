@@ -3,26 +3,25 @@
 
 See? Here's a graph of your productivity gains after using spark: ▁▂▃▅▇
 
-## install
+This is a fork of [Zach Holman's original spark](https://github.com/holman/spark) with fixes and additional features.
 
-spark is a [shell script][bin], so drop it somewhere and make sure it's added
-to your `$PATH`. It's helpful if you have a super-neat collection of dotfiles,
-[like mine][dotfiles]. Or you can use the following one-liner:
+## Dependencies
 
-```sh
-sudo sh -c "curl https://raw.githubusercontent.com/holman/spark/master/spark -o /usr/local/bin/spark && chmod +x /usr/local/bin/spark"
-```
+- `spark` requires `bash` and `sed`; additionally `bc` when scaling input data.
 
-If you're on OS X, spark is also on [Homebrew][brew]:
+## Installation
 
-    brew install spark
+Download or clone the Git repository (cloning allows easy updating via `git pull`):
 
-Depending on the fonts you have in your system and you use in the
-terminal, you might end up with irregular blocks. This is due to some
-fonts providing only part of the blocks, while the others are taken from
-a different, fallback font.
+    git clone [--branch stable] https://github.com/inkarkat/spark.git
+    
+- The `./bin` subdirectory is supposed to be added to `PATH`.
 
-## usage
+Depending on the fonts you have in your system and you use in the terminal, you
+might end up with irregular blocks. This is due to some fonts providing only
+part of the blocks, while the others are taken from a different, fallback font.
+
+## Usage
 
 Just run `spark` and pass it a list of numbers (comma-delimited, spaces,
 whatever you'd like). It's designed to be used in conjunction with other
@@ -33,7 +32,7 @@ scripts that can output in that format.
 
 Invoke help with `spark -h`.
 
-## cooler usage
+### Cooler usage
 
 There's a lot of stuff you can do.
 
@@ -72,30 +71,15 @@ ruby-1.8.7-p334 in spark/ on master with history: ▂▅▇▂
 ›
 ```
 
-## wicked cool usage
+### Wicked cool usage
 
-Sounds like a wiki is a great place to collect all of your
-[wicked cool usage][wiki] for spark.
+The Wiki (from the original author) is a great place to collect all
+of your [wicked cool usage](https://github.com/holman/spark/wiki/Wicked-Cool-Usage) for spark.
 
-## contributing
+## Contributing
 
-Contributions welcome! Like seriously, I think contributions are real nifty.
-
-Make your changes and be sure the tests all pass:
+Make your changes and run the tests:
 
     ./tests/test
 
-That also means you should probably be adding your own tests as well as changing
-the code. Wouldn't want to lose all your good work down the line, after all!
-
-Once everything looks good, open a pull request.
-
-## ▇▁ ⟦⟧ ▇▁
-
-This is a [@holman][holman] joint.
-
-[dotfiles]: https://github.com/holman/dotfiles
-[brew]:     https://github.com/mxcl/homebrew
-[bin]:      https://github.com/holman/spark/blob/master/spark
-[wiki]:     https://github.com/holman/spark/wiki/Wicked-Cool-Usage
-[holman]:   https://twitter.com/holman
+You should probably be adding your own tests as well as changing the code.
