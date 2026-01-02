@@ -12,9 +12,12 @@ originalSparkEmpty="$SPARK_EMPTY"
 originalSparkZero="$SPARK_ZERO"
 : ${SPARK_ZERO=_}
 : ${SPARK_BOX=█}
+originalSparkUnknown="$SPARK_UNKNOWN"
 : ${SPARK_UNKNOWN=×}
 : ${SPARK_UNKNOWN_DATA=x}
+originalSparkUnderflow="$SPARK_UNDERFLOW"
 : ${SPARK_UNDERFLOW=⭳}
+originalSparkOverflow="$SPARK_OVERFLOW"
 : ${SPARK_OVERFLOW=⭱}
 : ${SPARK_EMPTY_BUCKET=}
 : ${SPARK_LEGEND_BUCKET_SEPARATOR= }
@@ -315,6 +318,11 @@ do
                         ;;
                     esac
 
+                    doubledEmpty="${SPARK_EMPTY}${SPARK_EMPTY}"
+                    doubledZero="${SPARK_ZERO}${SPARK_ZERO}"
+                    doubledUnknown="${SPARK_UNKNOWN}${SPARK_EMPTY}"
+                    doubledUnderflow="${SPARK_UNDERFLOW}${SPARK_EMPTY}"
+                    doubledOverflow="${SPARK_OVERFLOW}${SPARK_EMPTY}"
                     case "$scheme" in
                       bars|default)
                         ticks=($defaultTicks)
@@ -329,12 +337,20 @@ do
                         ;;
                       double-squares)
                         [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
-                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${doubledEmpty}"}"
+                        SPARK_ZERO="${originalSparkZero:-${doubledZero}}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:-${doubledUnknown}}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=('██')
                         ;;
                       double-center-squares)
                         [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
-                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${doubledEmpty}"}"
+                        SPARK_ZERO="${originalSparkZero:-${doubledZero}}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:-${doubledUnknown}}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=('▝▘')
                         ;;
 
@@ -350,11 +366,17 @@ do
                         ;;
                       sized-fullwidth-boxes)
                         SPARK_EMPTY="${originalSparkEmpty:-　}"
-                        SPARK_ZERO="${originalSparkZero:-　}"
+                        SPARK_ZERO="${originalSparkZero:-＿}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:＊}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=(・ ◾ ⬛);;
                       color-fullwidth-boxes)
                         SPARK_EMPTY="${originalSparkEmpty:-⬜}"
-                        SPARK_ZERO="${originalSparkZero:-⬛}"
+                        SPARK_ZERO="${originalSparkZero:-＿}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:＊}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=(🟪 🟦 🟩 🟨 🟧 🟥);;
 
                       shaded-boxes)
@@ -362,7 +384,10 @@ do
                         ticks=(░ ▒ ▒ ▓ █);;
                       double-shaded-squares)
                         SPARK_EMPTY="${originalSparkEmpty:-  }"
-                        SPARK_ZERO="${originalSparkZero:-  }"
+                        SPARK_ZERO="${originalSparkZero:-${doubledZero}}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:-${doubledUnknown}}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=(░░ ▒▒ ▒▒ ▓▓ ██);;
 
                       *)
