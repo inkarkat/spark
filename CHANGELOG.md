@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.1.0 - RELEASEME
 ### Added
+- Allow addition of legend unit via --legend-unit
 ### Changed
 - The `spark` command now resides in a `./bin` subdirectory.
+- Improve double and fullwidth rendering characters.
 ### Deprecated
 ### Experimental
 ### Removed
