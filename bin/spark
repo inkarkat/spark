@@ -206,6 +206,7 @@ green()
 
 printLegend()
 {
+  local isMultiLineLegend; [[ "$SPARK_LEGEND_BUCKET_SEPARATOR" =~ \n ]] && isMultiLineLegend=t
   typeset -a ranges=()
   for ((i = 0; i < ${#ticks[@]}; i++))
   do
@@ -216,15 +217,17 @@ printLegend()
         continue
       fi
     elif [ ${bucketMin[i]} -eq ${bucketMax[i]} ]; then
-      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}"
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${isMultiLineLegend:+${legendUnit:+ }${legendUnit}}"
     else
-      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${SPARK_LEGEND_RANGE_SEPARATOR}${bucketMax[i]}"
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${SPARK_LEGEND_RANGE_SEPARATOR}${bucketMax[i]}${isMultiLineLegend:+${legendUnit:+ }${legendUnit}}"
     fi
     ranges+=("${ticks[i]}${range}")
   done
+
+  [ "$isMultiLineLegend" ] && legendUnit=''
   local IFS="$SPARK_LEGEND_BUCKET_SEPARATOR"
   [ ${#ranges[@]} -eq 0 ] \
-    || printf '%s%s\n' "${SPARK_LEGEND_SEPARATOR-${legendSeparator:- | }}" "${ranges[*]}"
+    || printf '%s%s%s\n' "${SPARK_LEGEND_SEPARATOR-${legendSeparator:- | }}" "${ranges[*]}" "${legendUnit:+ }${legendUnit}"
 }
 
 
@@ -237,7 +240,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] [--with-legend] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] [--with-legend [--legend-unit UNIT]] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -257,6 +260,8 @@ printUsage()
   --with-legend         Append a legend to the output (if input contains
                         newlines on a new line), showing the value ranges for
                         each sparkline character.
+  --legend-unit UNIT    Append UNIT to the legend (at the end of each legend
+                        line).
 
   EXAMPLES:
     $spark 0 30 55 80 ' ' 80 55 30 0 $'\n' 0 0 30 30 0 0 55 0 0
@@ -276,6 +281,7 @@ fixedMin=
 fixedMax=
 obtainDivider=evenDivider
 postAction=_echo
+legendUnit=
 while [ $# -ne 0 ]
 do
   case "$1" in
@@ -397,6 +403,7 @@ do
                     $colorizer
                     ;;
     --with-legend)  shift; postAction=printLegend;;
+    --legend-unit)  shift; legendUnit="${1:?}"; shift;;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;
