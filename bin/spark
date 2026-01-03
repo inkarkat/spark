@@ -245,7 +245,7 @@ printUsage()
 
     Separate whitespace arguments are taken over to the output.
     Completely empty lines in the input are rendered as spaces.
-    Unknown data can be marked with x.
+    Unknown data can be marked with "${SPARK_UNKNOWN_DATA}".
 
   --single-max-range    Change the value division so that only the highest value
                         is put into the largest bucket. By default, values are
