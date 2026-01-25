@@ -12,9 +12,12 @@ originalSparkEmpty="$SPARK_EMPTY"
 originalSparkZero="$SPARK_ZERO"
 : ${SPARK_ZERO=_}
 : ${SPARK_BOX=█}
+originalSparkUnknown="$SPARK_UNKNOWN"
 : ${SPARK_UNKNOWN=×}
 : ${SPARK_UNKNOWN_DATA=x}
+originalSparkUnderflow="$SPARK_UNDERFLOW"
 : ${SPARK_UNDERFLOW=⭳}
+originalSparkOverflow="$SPARK_OVERFLOW"
 : ${SPARK_OVERFLOW=⭱}
 : ${SPARK_EMPTY_BUCKET=}
 : ${SPARK_LEGEND_BUCKET_SEPARATOR= }
@@ -203,6 +206,7 @@ green()
 
 printLegend()
 {
+  local isMultiLineLegend; [[ "$SPARK_LEGEND_BUCKET_SEPARATOR" =~ \n ]] && isMultiLineLegend=t
   typeset -a ranges=()
   for ((i = 0; i < ${#ticks[@]}; i++))
   do
@@ -213,15 +217,17 @@ printLegend()
         continue
       fi
     elif [ ${bucketMin[i]} -eq ${bucketMax[i]} ]; then
-      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}"
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${isMultiLineLegend:+${legendUnit:+ }${legendUnit}}"
     else
-      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${SPARK_LEGEND_RANGE_SEPARATOR}${bucketMax[i]}"
+      local range="${SPARK_LEGEND_RANGE_ASSIGNMENT}${bucketMin[i]}${SPARK_LEGEND_RANGE_SEPARATOR}${bucketMax[i]}${isMultiLineLegend:+${legendUnit:+ }${legendUnit}}"
     fi
     ranges+=("${ticks[i]}${range}")
   done
+
+  [ "$isMultiLineLegend" ] && legendUnit=''
   local IFS="$SPARK_LEGEND_BUCKET_SEPARATOR"
   [ ${#ranges[@]} -eq 0 ] \
-    || printf '%s%s\n' "${SPARK_LEGEND_SEPARATOR-${legendSeparator:- | }}" "${ranges[*]}"
+    || printf '%s%s%s\n' "${SPARK_LEGEND_SEPARATOR-${legendSeparator:- | }}" "${ranges[*]}" "${legendUnit:+ }${legendUnit}"
 }
 
 
@@ -234,7 +240,7 @@ printUsage()
   cat <<EOF
 
   USAGE:
-    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] [--with-legend] VALUE,...
+    $spark [-h|--help] [--min n] [--max n] [--scale ld|ln|log10] [--single-max-range] [--flip|--as default|bars|sized-boxes|sized-fullwidth-boxes|color-fullwidth-boxes|shaded-boxes|double-shaded-squares|(greyscale|green|[RGB]rainbow)-(boxes|center-boxes|double-squares|double-center-squares|sized-boxes)] [--with-legend [--legend-unit UNIT]] VALUE,...
     cat FILE [...] | $spark [...] [-]
 
     Generates sparklines for a set of data; it takes a comma-separated or
@@ -242,7 +248,7 @@ printUsage()
 
     Separate whitespace arguments are taken over to the output.
     Completely empty lines in the input are rendered as spaces.
-    Unknown data can be marked with x.
+    Unknown data can be marked with "${SPARK_UNKNOWN_DATA}".
 
   --single-max-range    Change the value division so that only the highest value
                         is put into the largest bucket. By default, values are
@@ -254,6 +260,8 @@ printUsage()
   --with-legend         Append a legend to the output (if input contains
                         newlines on a new line), showing the value ranges for
                         each sparkline character.
+  --legend-unit UNIT    Append UNIT to the legend (at the end of each legend
+                        line).
 
   EXAMPLES:
     $spark 0 30 55 80 ' ' 80 55 30 0 $'\n' 0 0 30 30 0 0 55 0 0
@@ -273,6 +281,7 @@ fixedMin=
 fixedMax=
 obtainDivider=evenDivider
 postAction=_echo
+legendUnit=
 while [ $# -ne 0 ]
 do
   case "$1" in
@@ -315,6 +324,11 @@ do
                         ;;
                     esac
 
+                    doubledEmpty="${SPARK_EMPTY}${SPARK_EMPTY}"
+                    doubledZero="${SPARK_ZERO}${SPARK_ZERO}"
+                    doubledUnknown="${SPARK_UNKNOWN}${SPARK_EMPTY}"
+                    doubledUnderflow="${SPARK_UNDERFLOW}${SPARK_EMPTY}"
+                    doubledOverflow="${SPARK_OVERFLOW}${SPARK_EMPTY}"
                     case "$scheme" in
                       bars|default)
                         ticks=($defaultTicks)
@@ -329,12 +343,20 @@ do
                         ;;
                       double-squares)
                         [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
-                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${doubledEmpty}"}"
+                        SPARK_ZERO="${originalSparkZero:-${doubledZero}}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:-${doubledUnknown}}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=('██')
                         ;;
                       double-center-squares)
                         [ -n "$colorizer" ] || abortInvalidTick "$0" "$scheme"
-                        SPARK_EMPTY="${originalSparkEmpty:-"${SPARK_EMPTY}${SPARK_EMPTY}"}"
+                        SPARK_EMPTY="${originalSparkEmpty:-"${doubledEmpty}"}"
+                        SPARK_ZERO="${originalSparkZero:-${doubledZero}}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:-${doubledUnknown}}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=('▝▘')
                         ;;
 
@@ -350,11 +372,17 @@ do
                         ;;
                       sized-fullwidth-boxes)
                         SPARK_EMPTY="${originalSparkEmpty:-　}"
-                        SPARK_ZERO="${originalSparkZero:-　}"
+                        SPARK_ZERO="${originalSparkZero:-＿}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:＊}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=(・ ◾ ⬛);;
                       color-fullwidth-boxes)
                         SPARK_EMPTY="${originalSparkEmpty:-⬜}"
-                        SPARK_ZERO="${originalSparkZero:-⬛}"
+                        SPARK_ZERO="${originalSparkZero:-＿}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:＊}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=(🟪 🟦 🟩 🟨 🟧 🟥);;
 
                       shaded-boxes)
@@ -362,7 +390,10 @@ do
                         ticks=(░ ▒ ▒ ▓ █);;
                       double-shaded-squares)
                         SPARK_EMPTY="${originalSparkEmpty:-  }"
-                        SPARK_ZERO="${originalSparkZero:-  }"
+                        SPARK_ZERO="${originalSparkZero:-${doubledZero}}"
+                        SPARK_UNKNOWN="${originalSparkUnknown:-${doubledUnknown}}"
+                        SPARK_UNDERFLOW="${originalSparkUnderflow:-${doubledUnderflow}}"
+                        SPARK_OVERFLOW="${originalSparkOverflow:-${doubledOverflow}}"
                         ticks=(░░ ▒▒ ▒▒ ▓▓ ██);;
 
                       *)
@@ -372,6 +403,7 @@ do
                     $colorizer
                     ;;
     --with-legend)  shift; postAction=printLegend;;
+    --legend-unit)  shift; legendUnit="${1:?}"; shift;;
     --)             shift; break;;
     -)              break;;
     -*)             { echo "ERROR: Unknown option \"$1\"!"; echo; printUsage "$0"; } >&2; exit 2;;

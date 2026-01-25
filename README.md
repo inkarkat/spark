@@ -1,6 +1,8 @@
 # spark
 ### sparklines for your shell
 
+![Build Status](https://github.com/inkarkat/spark/actions/workflows/build.yml/badge.svg)
+
 See? Here's a graph of your productivity gains after using spark: ▁▂▃▅▇
 
 This is a fork of [Zach Holman's original spark](https://github.com/holman/spark) with fixes and additional features.
@@ -78,8 +80,4 @@ of your [wicked cool usage](https://github.com/holman/spark/wiki/Wicked-Cool-Usa
 
 ## Contributing
 
-Make your changes and run the tests:
-
-    ./tests/test
-
-You should probably be adding your own tests as well as changing the code.
+* automated testing is done with _bats - Bash Automated Testing System_ (https://github.com/bats-core/bats-core)
